@@ -7,7 +7,7 @@ import type { Criteria } from "./criteria";
 import { WEIGHTS } from "@/lib/config";
 import { SENIORITY_LADDER } from "@/lib/normalize/seniority";
 import { extractBenefits } from "./benefits";
-import { applyHardFilters, isLocationUncertain } from "./filters";
+import { applyHardFilters, isLocationUncertain, haystack } from "./filters";
 
 // ── Text helpers ──────────────────────────────────────────────────────────
 
@@ -15,14 +15,15 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function haystack(job: Job): string {
-  return [job.title, ...job.tags, ...job.categories, job.descriptionText]
-    .join(" ")
-    .toLowerCase();
+/** Normalise hyphens to spaces (mirrors filters.ts). */
+function normaliseHyphens(s: string): string {
+  return s.replace(/-/g, " ");
 }
 
 function termMatches(term: string, text: string): boolean {
-  return new RegExp(`\\b${escapeRegex(term.toLowerCase())}\\b`).test(text);
+  const normTerm = normaliseHyphens(term.toLowerCase());
+  const normText = normaliseHyphens(text);
+  return new RegExp(`\\b${escapeRegex(normTerm)}\\b`).test(normText);
 }
 
 // ── Factor scorers ────────────────────────────────────────────────────────

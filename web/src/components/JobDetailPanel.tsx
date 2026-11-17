@@ -20,6 +20,7 @@ import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import LaunchIcon from "@mui/icons-material/Launch";
 import BenefitChips from "./BenefitChips";
+import HighlightText from "./HighlightText";
 import ScoreBreakdown from "./ScoreBreakdown";
 import SourceAttribution from "./SourceAttribution";
 import type { Job, MatchResult, BenefitKey } from "@/lib/types";
@@ -28,6 +29,9 @@ interface Props {
   job: Job | null;
   match: MatchResult | null;
   mustHave?: BenefitKey[];
+  keywords?: string[];
+  targetTitles?: string[];
+  excludedKeywords?: string[];
   open: boolean;
   onClose: () => void;
 }
@@ -37,7 +41,7 @@ const SOURCE_LABEL: Record<string, string> = {
   remotive: "Remotive",
 };
 
-export default function JobDetailPanel({ job, match, mustHave = [], open, onClose }: Props) {
+export default function JobDetailPanel({ job, match, mustHave = [], keywords = [], targetTitles = [], excludedKeywords = [], open, onClose }: Props) {
   if (!job || !match) return null;
 
   const titleId = `job-detail-title-${job.id.replace(/[^a-z0-9]/gi, "-")}`;
@@ -137,7 +141,12 @@ export default function JobDetailPanel({ job, match, mustHave = [], open, onClos
               color="text.secondary"
               sx={{ whiteSpace: "pre-line", maxHeight: 300, overflowY: "auto" }}
             >
-              {job.descriptionText || "No description available."}
+              <HighlightText
+                text={job.descriptionText || "No description available."}
+                terms={[...keywords, ...targetTitles]}
+                warnTerms={excludedKeywords}
+                component="span"
+              />
             </Typography>
           </Box>
 

@@ -1,16 +1,19 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
+import Pagination from "@mui/material/Pagination";
 import Select from "@mui/material/Select";
 import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import JobCard from "./JobCard";
 import type { Job, MatchResult, BenefitKey } from "@/lib/types";
+
+const PAGE_SIZE = 10;
 
 type SortKey = "match" | "newest" | "salary";
 
@@ -21,13 +24,17 @@ interface Props {
   ranked: RankedJob[];
   excluded: ExcludedJob[];
   mustHave?: BenefitKey[];
+  keywords?: string[];
+  targetTitles?: string[];
   loading?: boolean;
   onJobClick: (job: Job) => void;
+  /** Polite announcement callback (connected to LiveAnnouncer in page.tsx) */
+  onAnnounce?: (msg: string) => void;
 }
 
 function sortJobs(jobs: RankedJob[], key: SortKey): RankedJob[] {
   const copy = [...jobs];
-  if (key === "match") return copy; // already sorted by match desc
+  if (key === "match") return copy;
   if (key === "newest") return copy.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
   if (key === "salary") {
     return copy.sort((a, b) => {
@@ -39,15 +46,49 @@ function sortJobs(jobs: RankedJob[], key: SortKey): RankedJob[] {
   return copy;
 }
 
-export default function JobList({ ranked, excluded, mustHave = [], loading = false, onJobClick }: Props) {
+export default function JobList({
+  ranked,
+  excluded,
+  mustHave = [],
+  keywords = [],
+  targetTitles = [],
+  loading = false,
+  onJobClick,
+  onAnnounce,
+}: Props) {
   const [sort, setSort] = useState<SortKey>("match");
+  const [page, setPage] = useState(1);
   const [showExcluded, setShowExcluded] = useState(false);
 
   const sorted = useMemo(() => sortJobs(ranked, sort), [ranked, sort]);
 
+  // Reset to page 1 whenever the sorted list changes (new criteria, sort, or refresh)
+  useEffect(() => {
+    setPage(1);
+  }, [sorted]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const paginated = sorted.slice(pageStart, pageStart + PAGE_SIZE);
+
+  function handlePageChange(_: React.ChangeEvent<unknown>, value: number) {
+    setPage(value);
+    // Scroll to results top so keyboard users don't get lost
+    document.getElementById("main")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const start = (value - 1) * PAGE_SIZE + 1;
+    const end = Math.min(value * PAGE_SIZE, sorted.length);
+    onAnnounce?.(`Page ${value} of ${totalPages}, showing jobs ${start}–${end}`);
+  }
+
   if (loading) {
     return (
-      <Stack component="ul" spacing={2} sx={{ p: 0, m: 0 }} aria-busy="true" aria-label="Loading jobs">
+      <Stack
+        component="ul"
+        spacing={2}
+        sx={{ p: 0, m: 0 }}
+        aria-busy="true"
+        aria-label="Loading jobs"
+      >
         {Array.from({ length: 6 }).map((_, i) => (
           <Box component="li" key={i} sx={{ listStyle: "none" }}>
             <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 1 }} />
@@ -93,7 +134,10 @@ export default function JobList({ ranked, excluded, mustHave = [], loading = fal
             id="sort-select"
             value={sort}
             label="Sort"
-            onChange={(e) => setSort(e.target.value as SortKey)}
+            onChange={(e) => {
+              setSort(e.target.value as SortKey);
+              setPage(1);
+            }}
           >
             <MenuItem value="match">Match %</MenuItem>
             <MenuItem value="newest">Newest</MenuItem>
@@ -102,18 +146,35 @@ export default function JobList({ ranked, excluded, mustHave = [], loading = fal
         </FormControl>
       </Stack>
 
-      {/* Results list */}
+      {/* Results list (current page only) */}
       <Stack component="ul" spacing={2} sx={{ p: 0, m: 0 }}>
-        {sorted.map((job) => (
+        {paginated.map((job) => (
           <JobCard
             key={job.id}
             job={job}
             match={job.match}
             mustHave={mustHave}
+            keywords={keywords}
+            targetTitles={targetTitles}
             onClick={onJobClick}
           />
         ))}
       </Stack>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", pt: 1 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            showFirstButton
+            showLastButton
+            aria-label="Job results pages"
+          />
+        </Box>
+      )}
 
       {/* Excluded toggle */}
       {excluded.length > 0 && (

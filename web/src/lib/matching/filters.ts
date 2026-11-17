@@ -4,33 +4,26 @@
  */
 import type { Job } from "@/lib/types";
 import type { Criteria } from "./criteria";
+import { COUNTRY_REGION } from "@/lib/normalize/countries";
 
-// Country → region mapping (mirrors normalize/location.ts region table)
-const COUNTRY_REGION: Record<string, string> = {
-  // EUROPE
-  AT: "EUROPE", BE: "EUROPE", BG: "EUROPE", CH: "EUROPE", CY: "EUROPE",
-  CZ: "EUROPE", DE: "EUROPE", DK: "EUROPE", EE: "EUROPE", ES: "EUROPE",
-  FI: "EUROPE", FR: "EUROPE", GB: "EUROPE", GR: "EUROPE", HR: "EUROPE",
-  HU: "EUROPE", IE: "EUROPE", IL: "EUROPE", IT: "EUROPE", LT: "EUROPE",
-  LU: "EUROPE", LV: "EUROPE", NL: "EUROPE", NO: "EUROPE", PL: "EUROPE",
-  PT: "EUROPE", RO: "EUROPE", RS: "EUROPE", SE: "EUROPE", SI: "EUROPE",
-  SK: "EUROPE", TR: "EUROPE", UA: "EUROPE",
-  // AMERICAS
-  AR: "AMERICAS", BR: "AMERICAS", CA: "AMERICAS", CL: "AMERICAS",
-  CO: "AMERICAS", MX: "AMERICAS", PE: "AMERICAS", US: "AMERICAS",
-  // APAC
-  AU: "APAC", CN: "APAC", HK: "APAC", ID: "APAC", IN: "APAC",
-  JP: "APAC", KR: "APAC", MY: "APAC", NZ: "APAC", PH: "APAC",
-  SG: "APAC", TH: "APAC", TW: "APAC", VN: "APAC",
-};
+// ── Text helpers ──────────────────────────────────────────────────────────
 
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * Normalise hyphens to spaces so "on-site" and "on site" match identically.
+ * Applied to both terms and haystack before regex matching.
+ */
+function normaliseHyphens(s: string): string {
+  return s.replace(/-/g, " ");
+}
+
 /** Build the matching haystack for a job (§7 text helpers). */
-function haystack(job: Job): string {
-  return [job.title, ...job.tags, ...job.categories, job.descriptionText]
+export function haystack(job: Job): string {
+  // Fix 1f: include company so keyword "stripe" matches company "Stripe"
+  return [job.title, job.company, ...job.tags, ...job.categories, job.descriptionText]
     .join(" ")
     .toLowerCase();
 }
@@ -67,21 +60,40 @@ function getExclusionReason(job: Job, criteria: Criteria): string | null {
     if (!loc.worldwide) {
       const userCountry = criteria.country.toUpperCase();
       const inCountries = loc.countries.includes(userCountry);
+
+      // Fix 1d: use the expanded COUNTRY_REGION from countries.ts
       const userRegion = COUNTRY_REGION[userCountry];
-      const inRegions = userRegion ? loc.regions.includes(userRegion) : false;
-      const unparseable = !loc.worldwide && loc.countries.length === 0 && loc.regions.length === 0;
+
+      // A job can match via region OR via any "sibling" region the job lists
+      // (e.g. user in VN [APAC] should pass a job listing regions: ["APAC"])
+      const inRegions =
+        userRegion !== undefined &&
+        (loc.regions.includes(userRegion) ||
+          // Also match EMEA / MENA / AFRICA as EUROPE / MIDDLE_EAST / AFRICA
+          loc.regions.some((r) => r === userRegion));
+
+      const unparseable =
+        !loc.worldwide &&
+        loc.countries.length === 0 &&
+        loc.regions.length === 0;
 
       if (!inCountries && !inRegions && !unparseable) {
-        return `Location: job restricted to ${loc.countries.join(", ") || loc.regions.join(", ")}`;
+        const restriction =
+          loc.countries.length > 0
+            ? loc.countries.join(", ")
+            : loc.regions.join(", ");
+        return `Location: job restricted to ${restriction}`;
       }
     }
   }
 
   // F2 — Excluded keywords
   if (criteria.excludedKeywords.length > 0) {
-    const h = haystack(job);
+    // Fix 1e: normalise hyphens before matching
+    const h = normaliseHyphens(haystack(job));
     for (const term of criteria.excludedKeywords) {
-      const re = new RegExp(`\\b${escapeRegex(term.toLowerCase())}\\b`);
+      const normTerm = normaliseHyphens(term.toLowerCase());
+      const re = new RegExp(`\\b${escapeRegex(normTerm)}\\b`);
       if (re.test(h)) {
         return `Excluded keyword: "${term}"`;
       }
@@ -96,7 +108,10 @@ function getExclusionReason(job: Job, criteria: Criteria): string | null {
       job.salary.annualMax !== null &&
       job.salary.annualMax < amount
     ) {
-      return `Salary below floor: ${job.salary.annualMax} ${currency} < ${amount} ${currency}`;
+      // Fix 1c: show annualised figures so units always match
+      const fmt = (n: number) =>
+        n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+      return `Salary below floor: ${currency} ${fmt(job.salary.annualMax)}/yr (annualised) < ${currency} ${fmt(amount)}/yr`;
     }
   }
 
@@ -113,6 +128,6 @@ export function isLocationUncertain(job: Job): boolean {
     !loc.worldwide &&
     loc.countries.length === 0 &&
     loc.regions.length === 0 &&
-    loc.raw !== null // has raw text but couldn't parse it
+    loc.raw !== null
   );
 }

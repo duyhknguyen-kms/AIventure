@@ -9,6 +9,7 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import BenefitChips from "./BenefitChips";
+import HighlightText from "./HighlightText";
 import SourceAttribution from "./SourceAttribution";
 import type { Job, MatchResult, BenefitKey } from "@/lib/types";
 
@@ -16,6 +17,8 @@ interface Props {
   job: Job;
   match: MatchResult;
   mustHave?: BenefitKey[];
+  keywords?: string[];
+  targetTitles?: string[];
   onClick: (job: Job) => void;
 }
 
@@ -54,7 +57,7 @@ function initials(company: string): string {
     .join("");
 }
 
-export default function JobCard({ job, match, mustHave = [], onClick }: Props) {
+export default function JobCard({ job, match, mustHave = [], keywords = [], targetTitles = [], onClick }: Props) {
   const { pct, label: levelLabel, color } = {
     pct: match.matchPercent,
     ...matchLevel(match.matchPercent),
@@ -85,7 +88,10 @@ export default function JobCard({ job, match, mustHave = [], onClick }: Props) {
           }
           title={
             <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600 }}>
-              {job.title}
+              <HighlightText
+                text={job.title}
+                terms={[...keywords, ...targetTitles]}
+              />
             </Typography>
           }
           subheader={job.company}

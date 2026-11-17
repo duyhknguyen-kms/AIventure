@@ -28,6 +28,7 @@ import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import CvScanner from "./CvScanner";
 import { DEFAULT_CRITERIA, type Criteria } from "@/lib/matching/criteria";
 import type { BenefitKey, Seniority, EmploymentType } from "@/lib/types";
 
@@ -166,6 +167,9 @@ export default function CriteriaForm({ criteria, onChange }: Props) {
       <Typography variant="h6" component="h2">
         Criteria
       </Typography>
+
+      {/* CV scanner — auto-fills skills, titles, seniority */}
+      <CvScanner criteria={criteria} onChange={onChange} />
 
       {/* Skills */}
       <ChipAutocomplete

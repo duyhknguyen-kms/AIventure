@@ -170,8 +170,11 @@ export default function HomePage() {
                 ranked={ranked as RankedJob[]}
                 excluded={excluded}
                 mustHave={criteria.mustHaveBenefits}
+                keywords={criteria.keywords}
+                targetTitles={criteria.targetTitles}
                 loading={loading}
                 onJobClick={(job) => setSelectedJob(ranked.find((r) => r.id === job.id) ?? null)}
+                onAnnounce={setAnnouncement}
               />
             </Grid>
           </Grid>
@@ -184,6 +187,9 @@ export default function HomePage() {
         job={selectedJob}
         match={selectedJob?.match ?? null}
         mustHave={criteria.mustHaveBenefits}
+        keywords={criteria.keywords}
+        targetTitles={criteria.targetTitles}
+        excludedKeywords={criteria.excludedKeywords}
         open={selectedJob !== null}
         onClose={() => setSelectedJob(null)}
       />

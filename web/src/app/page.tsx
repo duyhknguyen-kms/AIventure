@@ -13,6 +13,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import TuneIcon from "@mui/icons-material/Tune";
 import CriteriaForm from "@/components/CriteriaForm";
+import JobDetailPanel from "@/components/JobDetailPanel";
 import LiveAnnouncer from "@/components/LiveAnnouncer";
 import SkipLink from "@/components/SkipLink";
 import SourceStatusBanner from "@/components/SourceStatusBanner";
@@ -35,6 +36,7 @@ export default function HomePage() {
 
   const [criteria, setCriteria] = useCriteria();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<(RankedJob) | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -169,7 +171,7 @@ export default function HomePage() {
                 excluded={excluded}
                 mustHave={criteria.mustHaveBenefits}
                 loading={loading}
-                onJobClick={() => { /* Stage 8 — detail panel */ }}
+                onJobClick={(job) => setSelectedJob(ranked.find((r) => r.id === job.id) ?? null)}
               />
             </Grid>
           </Grid>
@@ -177,6 +179,15 @@ export default function HomePage() {
       </Container>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
+      {/* Job detail panel */}
+      <JobDetailPanel
+        job={selectedJob}
+        match={selectedJob?.match ?? null}
+        mustHave={criteria.mustHaveBenefits}
+        open={selectedJob !== null}
+        onClose={() => setSelectedJob(null)}
+      />
+
       <Box component="footer" sx={{ mt: 4, py: 2, borderTop: "1px solid", borderColor: "divider" }}>
         <Container maxWidth="lg">
           <Typography variant="caption" color="text.secondary">

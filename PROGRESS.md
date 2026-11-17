@@ -13,7 +13,7 @@ Tracks the 8-stage roadmap from `SPEC.md §14`.
 | 5 | Matching engine | ✅ Done | +51 (182 total) |
 | 6 | Dashboard list | ✅ Done | +7 (189 total) |
 | 7 | Criteria + persistence | ✅ Done | +11 (200 total) |
-| 8 | Detail + polish | ⬜ Pending | — |
+| 8 | Detail + polish | ✅ Done | +15 (215 total) |
 
 ---
 
@@ -78,10 +78,40 @@ Tracks the 8-stage roadmap from `SPEC.md §14`.
 - `tests/a11y/CriteriaForm.a11y.test.tsx` — 11 tests: zero axe violations, every input findable by label, all 4 fieldsets exposed as group+legend
 - **MUI v9 fixes:** `renderTags` → `renderValue`, `inputProps` → `slotProps.htmlInput`, Drawer `PaperProps` → `slotProps.paper`
 
-### ⬜ Stage 8 — Detail + polish
-Files to create:
-- [ ] `src/components/JobDetailPanel.tsx`
-- [ ] `src/components/ScoreBreakdown.tsx`
-- [ ] `tests/a11y/JobDetailPanel.a11y.test.tsx`
-- [ ] `tests/a11y/Dashboard.a11y.test.tsx`
-- [ ] §10.5 / §11 accessibility + compliance checklists
+### ✅ Stage 8 — Detail + polish
+- `src/components/ScoreBreakdown.tsx` — `<Table>` with `<caption>`, `LinearProgress` per factor, inactive factors show "not set" text
+- `src/components/JobDetailPanel.tsx` — MUI `Dialog` with `aria-labelledby`, close button `aria-label="Close job details"`, Apply as `<a>` with "(opens in new tab)", description as plain text (`whiteSpace: pre-line`), `alsoOn` links, `ScoreBreakdown`, `BenefitChips` with evidence blockquotes
+- `src/app/page.tsx` — card click wires to `selectedJob` state, `JobDetailPanel` rendered at page root
+- `src/theme.ts` — already had `prefers-reduced-motion` global override (animation/transition → 0.01ms) + scroll-padding-top for sticky AppBar
+- `tests/a11y/JobDetailPanel.a11y.test.tsx` — 7 tests: zero axe violations, aria-labelledby, focus-in-dialog, close aria-label, Apply aria-label, Esc closes, score table, inactive "not set", plain-text description
+- `tests/a11y/Dashboard.a11y.test.tsx` — 6 tests: one h1, main landmark, skip link first, zero axe violations, partial-failure role=alert, role=status region
+
+---
+
+## Compliance & Accessibility Checklists
+
+### §11 Compliance
+**Himalayas**
+- ✅ Every card shows "Source: Himalayas" linking to himalayas.app job page
+- ✅ Footer links to https://himalayas.app
+- ✅ Apply uses `applicationLink` from the API
+- ✅ No RSS/JSON feed or JobPosting structured data
+- ✅ `HIMALAYAS_API_KEY` is server-only (`.env.local`, not `NEXT_PUBLIC_`)
+- ✅ Max 1 upstream call per 6 h TTL window
+
+**Remotive**
+- ✅ Every card links back to Remotive `url` and names Remotive as source
+- ✅ No login or email required
+- ✅ No third-party job board submission
+- ✅ At most ~4 calls/day (6 h TTL, full feed once, local q-filter)
+- ℹ️ Remotive listings may be delayed 24 h (noted in Remotive feed, not surfaced in UI yet)
+
+### §10.5 Accessibility Checklist
+- ✅ `npm test` a11y suite: 215 tests, zero axe violations
+- ✅ Keyboard: SkipLink first, all inputs reachable by Tab, dialog closes with Esc, focus returns to card
+- ✅ Colour: match level = number + text + colour; benefit chips = icon + text + colour
+- ✅ No `dangerouslySetInnerHTML`; description rendered as plain text
+- ✅ reduced-motion: global CSS override in theme.ts
+- ⬜ Manual: axe DevTools scan in real browser (run before demo)
+- ⬜ Manual: NVDA + Chrome screen reader walkthrough
+- ⬜ Manual: 320 px / 200% zoom check

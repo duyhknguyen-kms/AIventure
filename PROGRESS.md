@@ -11,7 +11,7 @@ Tracks the 8-stage roadmap from `SPEC.md §14`.
 | 3 | Remotive adapter | ✅ Done | +13 (51 total) |
 | 4 | Aggregation + API | ✅ Done | +29 (131 total) |
 | 5 | Matching engine | ✅ Done | +51 (182 total) |
-| 6 | Dashboard list | ⬜ Pending | — |
+| 6 | Dashboard list | ✅ Done | +7 (189 total) |
 | 7 | Criteria + persistence | ⬜ Pending | — |
 | 8 | Detail + polish | ⬜ Pending | — |
 
@@ -58,18 +58,18 @@ Tracks the 8-stage roadmap from `SPEC.md §14`.
 - `tests/filters.test.ts` — 16 tests (F1/F2/F3)
 - `tests/score.test.ts` — 18 tests including §7.5 golden test = 88%
 
-### ⬜ Stage 6 — Dashboard list
-Files to create:
-- [ ] `src/app/page.tsx` — landmarks, h1, SkipLink, LiveAnnouncer, fetch `/api/jobs`
-- [ ] `src/components/SkipLink.tsx`
-- [ ] `src/components/LiveAnnouncer.tsx`
-- [ ] `src/components/JobList.tsx`
-- [ ] `src/components/JobCard.tsx`
-- [ ] `src/components/BenefitChips.tsx`
-- [ ] `src/components/SourceAttribution.tsx`
-- [ ] `src/components/SourceStatusBanner.tsx`
-- [ ] `tests/a11y/axe.ts`
-- [ ] `tests/a11y/JobCard.a11y.test.tsx`
+### ✅ Stage 6 — Dashboard list
+- `src/app/page.tsx` — full client shell: AppBar, SkipLink, LiveAnnouncer, criteria sidebar placeholder, JobList, footer
+- `src/components/SkipLink.tsx`
+- `src/components/LiveAnnouncer.tsx` — debounced 500 ms `role="status"` polite region
+- `src/components/JobCard.tsx` — Avatar initials fallback, match badge (number + text level + colour), SourceAttribution outside CardActionArea
+- `src/components/JobList.tsx` — sort (match/newest/salary), show-excluded toggle, loading skeletons
+- `src/components/BenefitChips.tsx` — filled+check for must-haves, outlined for detected, missing must-haves shown
+- `src/components/SourceAttribution.tsx` — `aria-label` includes "(opens in new tab)"
+- `src/components/SourceStatusBanner.tsx` — `role="alert"` via MUI Alert, Retry button
+- `tests/a11y/axe.ts` — WCAG 2.x AA axe helper
+- `tests/a11y/JobCard.a11y.test.tsx` — 7 tests: zero axe violations, accessible name, match badge text, source attribution
+- **Key fix:** SourceAttribution link moved outside CardActionArea to avoid nested-interactive axe violation
 
 ### ⬜ Stage 7 — Criteria + persistence
 Files to create:

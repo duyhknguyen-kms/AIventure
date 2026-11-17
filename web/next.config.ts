@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // cacheComponents + partialPrefetching are Next.js 16 experimental flags.
+  // cacheComponents conflicts with our API route segment configs (runtime/dynamic),
+  // and partialPrefetching requires cacheComponents. Neither is needed for this PoC.
 };
 
 export default nextConfig;

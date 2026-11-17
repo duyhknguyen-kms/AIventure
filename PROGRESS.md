@@ -12,7 +12,7 @@ Tracks the 8-stage roadmap from `SPEC.md §14`.
 | 4 | Aggregation + API | ✅ Done | +29 (131 total) |
 | 5 | Matching engine | ✅ Done | +51 (182 total) |
 | 6 | Dashboard list | ✅ Done | +7 (189 total) |
-| 7 | Criteria + persistence | ⬜ Pending | — |
+| 7 | Criteria + persistence | ✅ Done | +11 (200 total) |
 | 8 | Detail + polish | ⬜ Pending | — |
 
 ---
@@ -71,11 +71,12 @@ Tracks the 8-stage roadmap from `SPEC.md §14`.
 - `tests/a11y/JobCard.a11y.test.tsx` — 7 tests: zero axe violations, accessible name, match badge text, source attribution
 - **Key fix:** SourceAttribution link moved outside CardActionArea to avoid nested-interactive axe violation
 
-### ⬜ Stage 7 — Criteria + persistence
-Files to create:
-- [ ] `src/hooks/useCriteria.ts` — localStorage, 300 ms debounce
-- [ ] `src/components/CriteriaForm.tsx`
-- [ ] `tests/a11y/CriteriaForm.a11y.test.tsx`
+### ✅ Stage 7 — Criteria + persistence
+- `src/hooks/useCriteria.ts` — SSR-safe localStorage read on mount, 300 ms debounced write, Zod validation on load, invalid/missing → DEFAULT_CRITERIA
+- `src/components/CriteriaForm.tsx` — All criteria fields: chip Autocomplete (MUI v9 `renderValue`), seniority/employment type checkboxes in `fieldset`+`legend`, salary+currency, country Autocomplete, UTC offset Select, must-have/nice-to-have benefit checkboxes, Reset with confirm Dialog
+- `src/app/page.tsx` — Wired to `useCriteria`; re-ranks with `rankJobs` on every criteria change (pure, no network); responsive Drawer on mobile (< md), sidebar on desktop
+- `tests/a11y/CriteriaForm.a11y.test.tsx` — 11 tests: zero axe violations, every input findable by label, all 4 fieldsets exposed as group+legend
+- **MUI v9 fixes:** `renderTags` → `renderValue`, `inputProps` → `slotProps.htmlInput`, Drawer `PaperProps` → `slotProps.paper`
 
 ### ⬜ Stage 8 — Detail + polish
 Files to create:

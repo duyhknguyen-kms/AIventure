@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AIventure — web app
 
-## Getting Started
+Next.js 16 application inside the AIventure monorepo.  
+See the root [`README.md`](../README.md) for the full architecture and file-structure guide.
 
-First, run the development server:
+---
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# From the repo root
+cd web
+cp .env.example .env.local   # optional: add HIMALAYAS_API_KEY
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Node.js 20+ required.** If `node` is not on PATH:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# macOS arm64 — one-time install
+curl -fsSL https://nodejs.org/dist/v26.13.1/node-v26.13.1-darwin-arm64.tar.gz \
+  | tar -xz -C ~/.local/node --strip-components=1
+echo 'export PATH="$HOME/.local/node/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Commands
 
-To learn more about Next.js, take a look at the following resources:
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on http://localhost:3000 (Turbopack) |
+| `npm test` | Run all 269 tests once (vitest --run) |
+| `npm run lint` | ESLint |
+| `npm run build` | Production build |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Environment variables
 
-## Deploy on Vercel
+Copy `.env.example` to `.env.local`. Never commit `.env.local`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Default | Notes |
+|---|---|---|
+| `HIMALAYAS_API_KEY` | (empty) | Optional. Free key at himalayas.app/api-keys. Server-side only. |
+| `CACHE_TTL_SECONDS` | `21600` | 6 h. Keep ≥ 21600 for Remotive's 4-call/day limit. |
+| `HIMALAYAS_MAX_PAGES` | `5` | 5 pages × 20 jobs = 100 Himalayas jobs per refresh. |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Project structure (brief)
+
+```
+src/
+├── app/
+│   ├── layout.tsx          MUI providers, metadata, font
+│   ├── page.tsx            Dashboard (client component)
+│   └── api/jobs/route.ts   GET /api/jobs
+├── components/             UI components (see root README for details)
+├── hooks/
+│   └── useCriteria.ts      localStorage persistence
+└── lib/
+    ├── types.ts            Shared types
+    ├── config.ts           Weights, TTL, URLs
+    ├── sources/            Himalayas + Remotive adapters
+    ├── normalize/          Pure field-value converters
+    ├── aggregate/          Cache, dedupe, merge
+    ├── matching/           Filters + scorer (pure, browser-side)
+    └── cv/                 PDF/DOCX parser + criteria extractor
+tests/
+├── a11y/                   axe-core WCAG 2.x AA tests
+├── fixtures/               Recorded API responses (10 jobs each)
+└── *.test.ts               Unit + integration tests
+```
+
+Full file listing with per-file descriptions: see root [`README.md`](../README.md#file-structure).
+
+---
+
+## Testing approach
+
+- **Logic tests** run in the `node` environment (vitest default for `.test.ts` files).
+- **Component / a11y tests** run in `jsdom` via `// @vitest-environment jsdom` docblock.
+- No network calls in tests — adapters use `vi.stubGlobal("fetch", ...)` with recorded fixtures.
+- Coverage target: every module has a happy-path test + at least 2 edge cases.

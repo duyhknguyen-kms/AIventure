@@ -42,7 +42,9 @@ function makeMatch(overrides: Partial<MatchResult> = {}): MatchResult {
   return {
     jobId: "himalayas:test-1",
     matchPercent: 88,
-    factors: [],
+    factors: [
+      { key: "skills", weight: 30, active: true, score: 0.75, points: 22.5, detail: "3/4" },
+    ],
     benefits: [
       { key: "health", label: "Health / Medical", evidence: ["health insurance"] },
       { key: "pto", label: "Paid time off", evidence: ["unlimited PTO"] },

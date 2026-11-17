@@ -62,6 +62,7 @@ export default function JobCard({ job, match, mustHave = [], keywords = [], targ
     pct: match.matchPercent,
     ...matchLevel(match.matchPercent),
   };
+  const hasActiveCriteria = match.factors.some((f) => f.active);
 
   const salary = formatSalary(job);
   const locationSummary = job.location.worldwide
@@ -74,7 +75,11 @@ export default function JobCard({ job, match, mustHave = [], keywords = [], targ
           SourceAttribution lives below it to avoid nested-interactive violations. */}
       <CardActionArea
         onClick={() => onClick(job)}
-        aria-label={`${job.title} at ${job.company}, ${pct}% ${levelLabel}`}
+        aria-label={
+          hasActiveCriteria
+            ? `${job.title} at ${job.company}, ${pct}% ${levelLabel}`
+            : `${job.title} at ${job.company}`
+        }
       >
         <CardHeader
           avatar={
@@ -96,12 +101,14 @@ export default function JobCard({ job, match, mustHave = [], keywords = [], targ
           }
           subheader={job.company}
           action={
-            <Chip
-              label={`${pct}% · ${levelLabel}`}
-              color={color}
-              size="small"
-              sx={{ mt: 1, mr: 1 }}
-            />
+            hasActiveCriteria ? (
+              <Chip
+                label={`${pct}% · ${levelLabel}`}
+                color={color}
+                size="small"
+                sx={{ mt: 1, mr: 1 }}
+              />
+            ) : null
           }
         />
         <CardContent sx={{ pt: 0 }}>

@@ -1,0 +1,120 @@
+{
+  "pbtResults": {
+    "1. Write bug condition exploration test": {
+      "status": "passed",
+      "failingExample": "Bug confirmed by 4 counterexamples:\n1. matchPercent=100, all-inactive factors → \"100% · Strong match\" chip rendered (expected: hidden)\n   Received: \"BCFrontend EngineerBugfix Corp100% · Strong matchfull time · WorldwideSource: Himalayas\"\n2. matchPercent=50, all-inactive factors → \"50% · Medium match\" chip rendered (expected: hidden)\n   Received: \"BCFrontend EngineerBugfix Corp50% · Medium matchfull time · WorldwideSource: Himalayas\"\n3. matchPercent=0, all-inactive factors → \"0% · Low match\" chip rendered (expected: hidden)\n   Received: \"BCFrontend EngineerBugfix Corp0% · Low matchfull time · WorldwideSource: Himalayas\"\n4. factors=[], matchPercent=100 → \"100% · Strong match\" chip rendered (expected: hidden)",
+      "lastRunTimestamp": 1794908974531
+    }
+  },
+  "executionHistory": {
+    "1. Write bug condition exploration test": [
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908813469
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908827190
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908989143
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing fix)": [
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908813502
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908996086
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909065084
+      }
+    ],
+    "3.1 Implement the fix in `web/src/components/JobCard.tsx`": [
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908813533
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909072035
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909131071
+      }
+    ],
+    "3.2 Verify bug condition exploration test now passes": [
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908813583
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909137985
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909166649
+      }
+    ],
+    "3.3 Verify preservation tests still pass": [
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908813620
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909173100
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909225763
+      }
+    ],
+    "4. Checkpoint — Ensure all tests pass": [
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794908813653
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909232721
+      },
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909272226
+      }
+    ],
+    "3. Fix: hide match badge when no criteria are active": [
+      {
+        "executionId": "af7ded64-376f-4abd-8dbd-0d94dba1d471",
+        "chatSessionId": "sess_56201419-5fb5-43b9-984c-98f075eae614",
+        "timestamp": 1794909225820
+      }
+    ]
+  }
+}

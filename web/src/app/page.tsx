@@ -1,13 +1,7 @@
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
+import { Dashboard } from "@/components/Dashboard";
 
-// Placeholder until the dashboard is built (plan Step 38).
+// The dashboard is a client component (state, fetch, localStorage); the page
+// itself stays a server component so `layout.tsx` metadata applies.
 export default function Home() {
-  return (
-    <Container component="main" id="main" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1">
-        AIventure – Job matches
-      </Typography>
-    </Container>
-  );
+  return <Dashboard />;
 }

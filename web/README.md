@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AIventure
+
+Personalised remote job matches from [Himalayas](https://himalayas.app) and [Remotive](https://remotive.com), ranked by your skills, salary floor and benefit preferences.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# 1. Install dependencies (from the repo root)
+cd web
+npm install
+
+# 2. Set up environment variables
+cp .env.example .env.local
+# Edit .env.local to add your optional Himalayas API key
+
+# 3. Start the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running Tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Run the full test suite once
+npm test
 
-## Learn More
+# Watch mode
+npm run test:watch
 
-To learn more about Next.js, take a look at the following resources:
+# Generate a coverage report
+npm test -- --coverage
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `HIMALAYAS_API_KEY` | No | — | Free key from [himalayas.app/api-keys](https://himalayas.app/api-keys); raises rate limits. Never use `NEXT_PUBLIC_`. |
+| `CACHE_TTL_SECONDS` | No | `21600` (6 h) | Upstream response cache lifetime. Remotive advises ≤ 4 calls/day. |
+| `HIMALAYAS_MAX_PAGES` | No | `5` | Browse/search pages fetched per refresh (20 jobs/page). |
 
-## Deploy on Vercel
+Copy `.env.example` to `.env.local` (git-ignored by Next.js) before running.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js 16** (App Router) · **React 19** · **TypeScript** (strict)
+- **MUI 9** (Material UI) — all UI uses MUI components and the custom theme
+- **Zod** — validates every external API response and stored criteria
+- **Vitest** + **Testing Library** + **axe-core** — unit, component and WCAG a11y tests
+
+## Architecture
+
+```
+web/src/
+├── app/
+│   ├── layout.tsx          # MUI theme + CssBaseline wiring
+│   ├── page.tsx            # Renders <Dashboard />
+│   └── api/jobs/route.ts   # GET /api/jobs — aggregates, dedupes, scores
+├── components/             # UI components (CriteriaForm, JobCard, JobDetailPanel, …)
+├── hooks/                  # useCriteria (localStorage), useJobs (fetch)
+└── lib/
+    ├── sources/            # Himalayas + Remotive adapters
+    ├── aggregate/          # Cache, dedupe, merge
+    ├── matching/           # Scoring, filtering, criteria schema
+    └── normalize/          # Employment type, seniority, location, salary
+```
+
+Data is sourced directly from Himalayas and Remotive public APIs. All scoring happens in the browser — no extra network calls on criteria changes.

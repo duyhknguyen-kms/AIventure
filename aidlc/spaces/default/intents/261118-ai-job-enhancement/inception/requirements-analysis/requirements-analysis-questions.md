@@ -17,7 +17,7 @@ B. Use LLM to extract skills dynamically (higher recall, requires API key)
 C. Both — expanded static dictionary as fallback, LLM when available
 X. Other (please specify)
 
-[Answer]:
+[Answer]: No need right now
 
 ---
 
@@ -31,7 +31,7 @@ C. Local model via Ollama (no API cost, fully private, requires local GPU/CPU)
 D. Other (please specify)
 X. Not decided yet — lock in at Domain Design
 
-[Answer]:
+[Answer]: No need right now
 
 ---
 
@@ -44,7 +44,7 @@ B. Client-side — user provides their own API key in the UI; nothing touches ou
 C. Server-side for job scoring (no PII involved), client-side for CV extraction (opt-in for server)
 X. Other (please specify)
 
-[Answer]:
+[Answer]: No need right now
 
 ---
 
@@ -58,7 +58,7 @@ C. α = 0.5, with a UI slider so users can tune it
 D. No blending — AI score replaces the deterministic score entirely when enabled
 X. Other (please specify)
 
-[Answer]:
+[Answer]: A
 
 ---
 
@@ -71,7 +71,7 @@ B. EU data residency required (affects provider choice)
 C. No third-party cloud — local/self-hosted models only
 X. Other (please specify)
 
-[Answer]:
+[Answer]: A
 
 ---
 
@@ -84,7 +84,7 @@ B. Skip property-based tests for now — golden dataset tests are sufficient
 C. Other library (please specify)
 X. No preference — use whatever integrates cleanest
 
-[Answer]:
+[Answer]: X
 
 ---
 
@@ -98,4 +98,4 @@ C. Under $50/month (small team)
 D. No budget constraint — optimise for quality, not cost
 X. Other (please specify)
 
-[Answer]:
+[Answer]:No need right now

@@ -792,3 +792,31 @@
 **Message Id**: f64f9625
 
 ---
+
+## Session Resume
+**Timestamp**: 2026-11-18T02:48:51Z
+**Event**: SESSION_RESUMED
+**Source**: resume
+**Session**: sess_1c3bc022-b6ed-47ff-ab66-26cb9d80ddfd
+
+---
+
+## Human Turn
+**Timestamp**: 2026-11-18T02:48:52Z
+**Event**: HUMAN_TURN
+**Session**: sess_1c3bc022-b6ed-47ff-ab66-26cb9d80ddfd
+**Origin**: person
+**Source**: typed
+**Message Id**: 37294d59
+
+---
+
+## Human Turn
+**Timestamp**: 2026-11-18T02:56:13Z
+**Event**: HUMAN_TURN
+**Session**: sess_1c3bc022-b6ed-47ff-ab66-26cb9d80ddfd
+**Origin**: person
+**Source**: typed
+**Message Id**: 59489c0d
+
+---

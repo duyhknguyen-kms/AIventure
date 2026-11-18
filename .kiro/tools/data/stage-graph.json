@@ -3291,5 +3291,82 @@
         "matches": "**/{aidlc-docs,intents,codekb}/**"
       }
     ]
+  },
+  {
+    "slug": "qa-validation",
+    "number": "4.8",
+    "name": "QA Validation & Test Planning",
+    "phase": "operation",
+    "execution": "CONDITIONAL",
+    "condition": "Runs when explicitly included in a scope plan or invoked via --single. Requires build-and-test to have completed. Analyses existing test results and requirements, then produces a comprehensive QA validation report.",
+    "lead_agent": "aidlc-quality-agent",
+    "support_agents": [],
+    "mode": "inline",
+    "produces": [
+      "qa-user-stories",
+      "qa-functional-spec-review",
+      "qa-test-plan",
+      "qa-test-cases",
+      "qa-traceability-matrix",
+      "qa-report"
+    ],
+    "consumes": [
+      {
+        "artifact": "requirements",
+        "required": true
+      },
+      {
+        "artifact": "build-and-test-summary",
+        "required": true
+      },
+      {
+        "artifact": "cross-unit-traceability",
+        "required": false
+      },
+      {
+        "artifact": "code-summary",
+        "required": false
+      },
+      {
+        "artifact": "code-generation-plan",
+        "required": false
+      }
+    ],
+    "requires_stage": [
+      "build-and-test"
+    ],
+    "sensors": [],
+    "scopes": [
+      "express",
+      "classic",
+      "feature",
+      "mvp",
+      "enterprise"
+    ],
+    "reviewer": "aidlc-architecture-reviewer-agent",
+    "review_artifact": "qa-report",
+    "reviewer_max_iterations": 1,
+    "review_class": "advisory",
+    "inputs": "requirements.md (from requirements-analysis), build-and-test-summary.md, OPTIONAL: cross-unit-traceability.md, code-summary.md, code-generation-plan.md",
+    "outputs": "qa-user-stories.md, qa-functional-spec-review.md, qa-test-plan.md, qa-test-cases.md, qa-traceability-matrix.md, qa-report.md (under <record>/operation/qa-validation/, engine-resolved). Consolidated outputs also written to qa/ in the workspace root.",
+    "rules_in_context": [
+      {
+        "path": "aidlc/spaces/default/memory/org.md",
+        "scope": "org"
+      },
+      {
+        "path": "aidlc/spaces/default/memory/team.md",
+        "scope": "team"
+      },
+      {
+        "path": "aidlc/spaces/default/memory/project.md",
+        "scope": "project"
+      },
+      {
+        "path": "aidlc/spaces/default/memory/phases/operation.md",
+        "scope": "phase"
+      }
+    ],
+    "sensors_applicable": []
   }
 ]

@@ -33,7 +33,8 @@
       "observability-setup": "SKIP",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "SKIP"
     }
   },
   "classic": {
@@ -70,7 +71,8 @@
       "observability-setup": "SKIP",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "EXECUTE"
     }
   },
   "enterprise": {
@@ -107,7 +109,8 @@
       "observability-setup": "EXECUTE",
       "incident-response": "EXECUTE",
       "performance-validation": "EXECUTE",
-      "feedback-optimization": "EXECUTE"
+      "feedback-optimization": "EXECUTE",
+      "qa-validation": "EXECUTE"
     }
   },
   "express": {
@@ -144,7 +147,8 @@
       "observability-setup": "EXECUTE",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "EXECUTE"
     }
   },
   "feature": {
@@ -181,7 +185,8 @@
       "observability-setup": "EXECUTE",
       "incident-response": "EXECUTE",
       "performance-validation": "EXECUTE",
-      "feedback-optimization": "EXECUTE"
+      "feedback-optimization": "EXECUTE",
+      "qa-validation": "EXECUTE"
     }
   },
   "infra": {
@@ -218,7 +223,8 @@
       "observability-setup": "EXECUTE",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "SKIP"
     }
   },
   "mvp": {
@@ -255,7 +261,8 @@
       "observability-setup": "SKIP",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "EXECUTE"
     }
   },
   "poc": {
@@ -292,7 +299,8 @@
       "observability-setup": "SKIP",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "SKIP"
     }
   },
   "refactor": {
@@ -329,7 +337,8 @@
       "observability-setup": "SKIP",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "SKIP"
     }
   },
   "security-patch": {
@@ -366,7 +375,8 @@
       "observability-setup": "SKIP",
       "incident-response": "SKIP",
       "performance-validation": "SKIP",
-      "feedback-optimization": "SKIP"
+      "feedback-optimization": "SKIP",
+      "qa-validation": "SKIP"
     }
   },
   "workshop": {
@@ -403,7 +413,8 @@
       "observability-setup": "EXECUTE",
       "incident-response": "EXECUTE",
       "performance-validation": "EXECUTE",
-      "feedback-optimization": "EXECUTE"
+      "feedback-optimization": "EXECUTE",
+      "qa-validation": "SKIP"
     }
   }
 }

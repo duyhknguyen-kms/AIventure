@@ -104,7 +104,7 @@ function renderCard(job: Job, match: MatchResult) {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <ul>
-        <JobCard job={job} match={match} onClick={() => {}} />
+        <JobCard job={job} match={match} onSelect={() => {}} />
       </ul>
     </ThemeProvider>,
   );

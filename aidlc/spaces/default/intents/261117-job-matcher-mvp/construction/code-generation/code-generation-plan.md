@@ -82,7 +82,7 @@
 
 ### Phase 1: Project Scaffolding & Core Infrastructure
 
-- [x] **Step 1: Initialize Next.js 15 App with TypeScript**
+- [ ] **Step 1: Initialize Next.js 15 App with TypeScript**
   - Scaffold with `npx create-next-app@latest web --typescript --app --src-dir --import-alias "@/*" --use-npm`
   - Accept all App Router defaults
   - Verify `web/tsconfig.json` has `strict: true`
@@ -95,17 +95,17 @@
   - Add scripts to `web/package.json`: `"test": "vitest"`, `"test:ui": "vitest --ui"`
   - **Traces:** C1 (tech stack constraint), NFR6 (testability requirement)
 
-- [x] **Step 3: Configure Vitest**
+- [ ] **Step 3: Configure Vitest**
   - Create `web/vitest.config.ts` with `jsdom` environment, test file patterns, coverage config
   - Set up `@testing-library/react` and `@testing-library/jest-dom` globals
   - **Traces:** NFR6 (testability requirement)
 
-- [x] **Step 4: Create MUI Theme with WCAG AA Contrast**
+- [ ] **Step 4: Create MUI Theme with WCAG AA Contrast**
   - Create `web/src/theme.ts` with custom theme: AA-compliant color palette, focus ring styles, reduced-motion media query support
   - Export `ThemeProvider`-wrapped component
   - **Traces:** NFR3, NFR3.3 (WCAG AA color contrast), C1 (MUI requirement)
 
-- [x] **Step 5: Update Root Layout for MUI + A11y**
+- [ ] **Step 5: Update Root Layout for MUI + A11y**
   - Update `web/src/app/layout.tsx`:
     - Wrap with `AppRouterCacheProvider` (from `@mui/material-nextjs`)
     - Apply `ThemeProvider` with custom theme

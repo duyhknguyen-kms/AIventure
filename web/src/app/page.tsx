@@ -69,6 +69,7 @@ export default function HomePage() {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadJobs(); }, [loadJobs]);
 
   // ── Re-rank on criteria or jobs change (pure, no network) ─────────────
@@ -79,6 +80,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading && rawJobs.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnnouncement(`Showing ${ranked.length} job${ranked.length !== 1 ? "s" : ""}, sorted by match`);
     }
   }, [ranked.length, loading, rawJobs.length]);

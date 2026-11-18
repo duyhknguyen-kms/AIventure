@@ -23,7 +23,10 @@ export function useCriteria(): [Criteria, (next: Criteria) => void] {
       const raw = localStorage.getItem(CRITERIA_STORAGE_KEY);
       if (raw) {
         const parsed = CriteriaSchema.safeParse(JSON.parse(raw));
-        if (parsed.success) setCriteria(parsed.data);
+        if (parsed.success) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setCriteria(parsed.data);
+        }
       }
     } catch {
       // corrupted storage — use default

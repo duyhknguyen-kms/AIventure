@@ -140,7 +140,7 @@ export default function CvScanner({ criteria, onChange }: Props) {
           {hasAnything ? (
             <Stack spacing={2}>
               <Typography variant="body2" color="text.secondary">
-                Review what was found. Uncheck anything you don't want to add.
+                Review what was found. Uncheck anything you don&apos;t want to add.
                 These will be merged with your existing criteria.
               </Typography>
 

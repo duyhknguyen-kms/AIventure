@@ -120,7 +120,7 @@ export default function JobDetailPanel({ job, match, mustHave = [], keywords = [
                       sx={{ m: 0, pl: 2, borderLeft: "3px solid", borderColor: "divider" }}
                     >
                       <Typography variant="caption" color="text.secondary">
-                        "{snippet}"
+                        &quot;{snippet}&quot;
                       </Typography>
                     </Box>
                   ))

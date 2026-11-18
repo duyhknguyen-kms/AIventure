@@ -64,6 +64,7 @@ export default function JobList({
 
   // Reset to page 1 whenever the sorted list changes (new criteria, sort, or refresh)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
   }, [sorted]);
 

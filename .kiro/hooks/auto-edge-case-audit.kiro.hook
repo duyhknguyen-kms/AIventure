@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Auto Edge-Case QA Audit",
+  "description": "Triggers the qa-edge-case-reviewer persona to audit critical business logic files for boundary and concurrency flaws on save.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/api/**/*.ts",
+      "src/services/**/*.ts",
+      "!src/**/*.test.ts",
+      "!src/**/*.spec.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Switch into the `qa-edge-case-reviewer` persona defined in `.kiro/agents/qa-edge-case-reviewer.json` and strictly follow all rules, read-only constraints, and output templates in `.kiro/agents/qa-edge-case-reviewer-prompt.md` along with `.kiro/steering/qa-standards.md`. Audit the file that was just saved for boundary conditions, nullability gaps, race conditions, and missing negative tests. Do not modify any files—output the structured Edge-Case Audit Summary directly in chat."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Pre-Commit QA & Security Gate",
+  "description": "Audits staged and modified Git changes against QA testing standards, code hygiene, and security rules before committing.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Act as a Senior QA & AppSec Gatekeeper. Run `git diff --cached` (or `git diff` if nothing is staged yet) to inspect all pending code changes before commit. Audit the changes against the following mandatory checklist:\n\n1. **Security & Secrets:** Verify there are no hardcoded API keys, tokens, passwords, private keys, or sensitive PII logged via `console.log`.\n2. **Input Validation & Error Handling:** Ensure all new or modified API endpoints and external inputs validate payloads (e.g., via Zod) and handle exceptions cleanly without exposing stack traces.\n3. **Test Coverage & Hygiene:** Confirm every modified business logic file has corresponding updated unit tests adhering to `.kiro/steering/qa-standards.md`, with zero `.skip` or `.only` flags.\n4. **Verification Suite:** Run the project's linter, type-checker, and full test suite in the terminal.\n\nOutput a clear **PASS / BLOCK** verdict in English with a bulleted breakdown of any violations and exact file/line references. Do not auto-commit the code; halt and list required fixes if any check fails."
+  }
+}

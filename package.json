@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/typescript-checker": "^10.1.1",
+    "@stryker-mutator/vitest-runner": "^10.1.1"
+  },  
+  "scripts": {
+    "test:mutation": "stryker run",
+    "test:mutation:incremental": "stryker run --incremental",
+    "qa:kill-mutants": "npm run test:mutation:incremental || kiro-cli chat --agent qa-test-writer --no-interactive \"Read .kiro/tmp/mutation-report.json, write targeted unit test assertions to kill all Survived mutants, and re-run Stryker.\""
+  }
+}

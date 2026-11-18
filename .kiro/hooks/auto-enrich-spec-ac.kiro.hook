@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto-Enrich Spec Acceptance Criteria (QA)",
+  "description": "Automatically reviews requirements.md files in .kiro/specs/ and appends boundary conditions, negative cases, security, and performance acceptance criteria.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/**/requirements.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A specification file (`.kiro/specs/**/requirements.md`) was just created or updated. Review all User Stories and Acceptance Criteria against `.kiro/steering/spec-qa-enrichment.md`. If any User Story lacks explicit **Boundary Conditions**, **Negative/Error Scenarios**, **Security Requirements**, or **Performance Criteria**, enrich `requirements.md` by appending those missing Acceptance Criteria in English using clear EARS syntax (`WHEN ... THE SYSTEM SHALL ...`). If all four dimensions are already thoroughly covered for every requirement, do not modify the file and confirm that the Spec meets QA readiness."
+  }
+}

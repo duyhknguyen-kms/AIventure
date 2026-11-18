@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Mutation Test & Harden Assertions",
+  "description": "Runs StrykerJS mutation testing on uncommitted source files and instructs qa-test-writer to write assertions that kill all survived mutants.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Identify the modified source files in `git diff --name-only` (matching `src/services/**/*.ts` or `src/api/**/*.ts`). Run StrykerJS scoped strictly to those files using `npx stryker run --mutate <comma-separated-files>` so it generates `.kiro/tmp/mutation-report.json`.\n\nOnce finished, adopt `.kiro/agents/qa-test-writer-prompt.md`, inspect all `Survived` mutants in `.kiro/tmp/mutation-report.json`, and strengthen the corresponding `*.test.ts` assertions (without modifying production source code). Re-run Stryker on those files to confirm the mutation score exceeds 85%."
+  }
+}

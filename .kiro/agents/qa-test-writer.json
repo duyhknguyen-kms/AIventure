@@ -1,0 +1,45 @@
+{
+  "name": "qa-test-writer",
+  "description": "QA Automation Engineer that takes an Edge-Case Audit Report and implements the missing unit and integration tests strictly following project QA standards.",
+  "prompt": "file://./qa-test-writer-prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "glob",
+    "grep",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "glob",
+    "grep"
+  ],
+  "resources": [
+    "file://.kiro/steering/qa-standards.md",
+    "file://.kiro/steering/tech.md"
+  ],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.js",
+        "**/*.spec.js",
+        "tests/**",
+        "__tests__/**"
+      ]
+    },
+    "shell": {
+      "allowedCommands": [
+        "npm test *",
+        "npx vitest *",
+        "npx jest *",
+        "npx stryker run *",
+        "pnpm test *",
+        "yarn test *"
+      ]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto Traceability Audit (Spec -> Tasks Gate)",
+  "description": "Audits tasks.md against requirements.md and design.md to ensure 100% of acceptance criteria, edge cases, and security safeguards have mapped implementation and test tasks before coding starts.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/**/tasks.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A task breakdown file (`.kiro/specs/**/tasks.md`) was just created or updated. Execute a strict **Requirements-to-Tasks Traceability Audit** against its sibling `requirements.md` and `design.md` following `.kiro/steering/spec-traceability-gate.md`:\n\n1. Extract every Acceptance Criterion (Happy Path, Boundary, Negative, Security, Performance) from `requirements.md` and every architectural safeguard (idempotency, DB constraints, auth checks) from `design.md`.\n2. Map each item to its corresponding Task ID in `tasks.md` and verify whether unit/integration test sub-tasks are included.\n3. Output a Markdown **Traceability Matrix** table in English with columns: `AC / Safeguard ID` | `Category` | `Mapped Task(s)` | `Test Sub-Task?` | `Status (COVERED / MISSING)`.\n4. Declare a clear verdict at the top: **`READY TO CODE`** (only if 0 items are `MISSING`) or **`BLOCKED - GAPS DETECTED`** (listing the exact missing tasks to append to `tasks.md`). Do not modify `tasks.md` automatically during this audit; wait for user approval to patch any gaps."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto Stress-Test Design Spec (QA Architect)",
+  "description": "Triggers the spec-qa-architect persona whenever design.md is saved to audit requirement traceability, concurrency, security, and performance bottlenecks before task generation.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/**/design.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A specification design file (`.kiro/specs/**/design.md`) was just saved. Switch into the `spec-qa-architect` persona defined in `.kiro/agents/spec-qa-architect.json` and strictly follow the 5-Pillar Spec Stress-Test Checklist and Required Output Format in `.kiro/agents/spec-qa-architect-prompt.md` alongside `.kiro/steering/spec-qa-enrichment.md`.\n\nInspect the saved `design.md` together with its sibling `requirements.md` in the same feature folder. Audit requirement traceability, concurrency/idempotency gaps, AppSec/IDOR risks, and scale bottlenecks. Do not modify `design.md` or `requirements.md` automatically during this hook run—output the structured **Spec Readiness Verdict** (`READY FOR TASKS` or `NEEDS REVISION`) and proposed Spec Patch directly in chat so the team can approve updates before generating `tasks.md`."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Chained QA Audit -> Test Writer",
+  "description": "Runs qa-edge-case-reviewer to audit uncommitted changes for edge cases, then automatically passes the report to qa-test-writer to implement and verify missing unit tests.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Execute a strict two-phase QA pipeline on all uncommitted Git changes (`git diff` / `git diff --cached`):\n\n### Phase 1: Edge-Case Audit (Reviewer Persona)\n1. Adopt the exact role, read-only rules, and checklist of `.kiro/agents/qa-edge-case-reviewer-prompt.md`.\n2. Inspect the modified source files and existing test suites against `.kiro/steering/qa-standards.md`.\n3. Generate the complete **Edge-Case Audit Summary** (listing every boundary condition, nullability gap, race condition, and missing negative scenario). Do not modify any files during Phase 1.\n\n### Phase 2: Automated Test Implementation (Test-Writer Persona)\n1. Immediately pass your Phase 1 Edge-Case Audit Summary as input into `.kiro/agents/qa-test-writer-prompt.md`.\n2. Strictly obey the Test-Writer guardrails: **only create or edit `*.test.*` / `*.spec.*` files**—never modify production source code.\n3. Implement every uncovered edge case from Phase 1 using the AAA pattern and run the test runner via terminal.\n4. Output both the Phase 1 Audit Summary and the Phase 2 Test Implementation Summary, clearly flagging any newly exposed production bugs (failing assertions) that require developer fixes."
+  }
+}

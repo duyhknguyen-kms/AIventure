@@ -1,0 +1,29 @@
+{
+  "name": "spec-qa-architect",
+  "description": "Principal QA & AppSec Architect that stress-tests requirements.md and design.md specifications for ambiguities, edge-case gaps, security threats, and architectural bottlenecks before coding begins.",
+  "prompt": "file://./spec-qa-architect-prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "glob",
+    "grep"
+  ],
+  "allowedTools": [
+    "read",
+    "glob",
+    "grep"
+  ],
+  "resources": [
+    "file://.kiro/steering/spec-qa-enrichment.md",
+    "file://.kiro/steering/qa-standards.md",
+    "file://.kiro/steering/tech.md"
+  ],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": [
+        ".kiro/specs/**/requirements.md",
+        ".kiro/specs/**/design.md"
+      ]
+    }
+  }
+}

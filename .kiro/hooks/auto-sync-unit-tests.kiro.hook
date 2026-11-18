@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Auto-Sync & Run Unit Tests",
+  "description": "Automatically updates and runs corresponding unit tests whenever a business logic or API source file is saved.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.ts",
+      "!src/**/*.test.ts",
+      "!src/**/*.spec.ts",
+      "!src/**/*.d.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A source file was just saved. Locate its corresponding unit test file (or create one if missing) following the project's QA standards in `.kiro/steering/qa-standards.md`. Update the test cases to cover any modified logic, boundary values, and error paths. Run the unit test suite via terminal for that specific test file and fix any failing assertions until 100% of tests pass. Do not modify the source file itself unless a clear runtime bug is exposed by the tests."
+  }
+}

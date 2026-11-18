@@ -1,0 +1,31 @@
+{
+  "name": "qa-edge-case-reviewer",
+  "description": "Adversarial QA Engineer that audits code changes for boundary conditions, race conditions, null/undefined handling, and missing negative test coverage.",
+  "prompt": "file://./qa-edge-case-reviewer-prompt.md",
+  "tools": [
+    "read",
+    "glob",
+    "grep",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "glob",
+    "grep"
+  ],
+  "resources": [
+    "file://.kiro/steering/qa-standards.md",
+    "file://.kiro/steering/tech.md"
+  ],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": [
+        "git diff *",
+        "git status",
+        "npm test *",
+        "npx vitest *",
+        "npx jest *"
+      ]
+    }
+  }
+}

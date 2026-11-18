@@ -1,0 +1,31 @@
+{
+  "name": "qa-contract-reviewer",
+  "description": "API Governance & Database Schema Auditor that detects backward-incompatible breaking changes in REST/GraphQL endpoints, DTOs, OpenAPI specs, and DB migrations.",
+  "prompt": "file://./qa-contract-reviewer-prompt.md",
+  "tools": [
+    "read",
+    "glob",
+    "grep",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "glob",
+    "grep"
+  ],
+  "resources": [
+    "file://.kiro/steering/api-contract-standards.md",
+    "file://.kiro/steering/tech.md"
+  ],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": [
+        "git diff *",
+        "git status",
+        "npm test *",
+        "npx vitest *contract*",
+        "npx jest *contract*"
+      ]
+    }
+  }
+}

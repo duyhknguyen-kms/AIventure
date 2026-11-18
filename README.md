@@ -162,3 +162,38 @@ npm test         # all tests (vitest --run)
 npm run lint     # ESLint
 npm run build    # production build
 ```
+
+# AI-DLC Quality Engineering Pipeline (`.kiro/`)
+
+This repository uses **Kiro IDE**, **Kiro CLI**, **StrykerJS**, and **Husky** to enforce an automated, shift-left Quality Engineering (QE) pipeline across every stage of the **AI-Driven Development Life Cycle (AI-DLC)**.
+
+---
+
+## 1. Architecture Overview
+
+```text
+.kiro/
+├── agents/
+│   ├── spec-qa-architect.json                # Pre-code Spec & Design auditor (.kiro/specs/ only)
+│   ├── spec-qa-architect-prompt.md
+│   ├── qa-contract-reviewer.json             # Read-only API & DB breaking-change auditor
+│   ├── qa-contract-reviewer-prompt.md
+│   ├── qa-edge-case-reviewer.json            # Read-only adversarial code & diff auditor
+│   ├── qa-edge-case-reviewer-prompt.md
+│   ├── qa-test-writer.json                   # Test-only builder & mutant killer (*.test.* only)
+│   └── qa-test-writer-prompt.md
+├── hooks/
+│   ├── auto-enrich-spec-ac.kiro.hook         # Auto-appends boundary/security AC to requirements.md
+│   ├── auto-stress-test-design-spec.kiro.hook # Auto-audits design.md before tasks.md generation
+│   ├── auto-traceability-audit.kiro.hook     # Verifies 100% AC-to-Task mapping in tasks.md
+│   ├── auto-contract-guard.kiro.hook         # Guards API routes, DTOs & DB migrations on save
+│   ├── auto-sync-unit-tests.kiro.hook        # Auto-updates & runs baseline unit tests on save
+│   ├── chained-qa-audit-and-test.kiro.hook   # Manual 2-phase Reviewer -> Test-Writer pipeline
+│   ├── kill-survived-mutants.kiro.hook       # Runs StrykerJS & hardens weak test assertions
+│   └── pre-commit-qa-gate.kiro.hook          # Manual pre-commit security & test hygiene check
+└── steering/
+    ├── api-contract-standards.md             # Consumer-driven contract & schema validation rules
+    ├── qa-documentation.md                   # Enforces English-only QA artifacts & specs
+    ├── qa-standards.md                       # Enforces AAA pattern & 4-category test coverage
+    ├── spec-qa-enrichment.md                 # Enforces EARS boundary, security & performance AC
+    └── spec-traceability-gate.md             # Enforces 1:1 traceability from Spec to Tasks

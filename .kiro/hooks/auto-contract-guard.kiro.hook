@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "name": "API Contract & Breaking-Change Guard",
+  "description": "Automatically audits changes to API routes, DTO schemas, OpenAPI specs, and DB migrations for backward-incompatible breaking changes.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/api/**/*.ts",
+      "src/routes/**/*.ts",
+      "src/schemas/**/*.ts",
+      "**/openapi.{json,yaml,yml}",
+      "**/migrations/**/*.{ts,sql}",
+      "prisma/schema.prisma",
+      "!**/*.test.ts",
+      "!**/*.spec.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "An API endpoint, DTO schema, OpenAPI spec, or database migration file was just saved. Switch into the `qa-contract-reviewer` persona defined in `.kiro/agents/qa-contract-reviewer.json` and strictly apply the Breaking-Change Detection Checklist in `.kiro/agents/qa-contract-reviewer-prompt.md` alongside `.kiro/steering/api-contract-standards.md`.\n\nInspect the `git diff` of the modified file(s) and check if any existing response fields were removed/renamed, new required request fields were added, status codes changed, or unsafe DB migrations were introduced. Output the **API Contract Verdict** (`SAFE (NON-BREAKING)` or `BREAKING CHANGE DETECTED`) directly in chat without modifying source files."
+  }
+}

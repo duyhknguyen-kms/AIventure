@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const GROQ_API = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL = "llama-3.3-70b-versatile"; // available on the free tier
+const MODEL = "openai/gpt-oss-20b"; // fast model available on the Groq developer plan
 const MAX_TOKENS = 1024;
 
 interface ChatMessage {

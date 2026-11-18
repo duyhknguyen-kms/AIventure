@@ -47,7 +47,7 @@ function SkeletonCards({ count, animate }: { count: number; animate: boolean }) 
   return (
     <Stack spacing={2} aria-hidden="true" data-testid="job-skeletons">
       {Array.from({ length: count }, (_, i) => (
-        <Card key={i} variant="outlined" sx={{ borderRadius: 3, border: "1px solid", borderColor: "grey.200" }}>
+        <Card key={i} variant="outlined" sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
           <CardContent sx={{ p: 2.5 }}>
             <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1.5 }}>
               <Skeleton variant="circular" width={48} height={48} animation={animation} />
@@ -110,9 +110,9 @@ export function JobList({
           mb: 2,
           p: 1.5,
           borderRadius: 2,
-          bgcolor: "white",
+          bgcolor: "background.paper",
           border: "1px solid",
-          borderColor: "grey.200",
+          borderColor: "divider",
         }}
       >
         <FilterListIcon sx={{ color: "text.disabled", fontSize: "1rem" }} aria-hidden="true" />
@@ -125,7 +125,7 @@ export function JobList({
           value={sort}
           onChange={(e) => { if (isSortKey(e.target.value)) setSort(e.target.value); }}
           slotProps={{ htmlInput: { "data-testid": "sort-select", "aria-label": "Sort jobs by" } }}
-          sx={{ minWidth: 130, "& .MuiOutlinedInput-root": { bgcolor: "white" } }}
+          sx={{ minWidth: 130, "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
         >
           {SORT_OPTIONS.map((opt) => (
             <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
@@ -209,12 +209,13 @@ export function JobList({
             data-testid="job-list"
             sx={{ listStyle: "none", m: 0, p: 0 }}
           >
-            {filtered.map((job) => (
+            {filtered.map((job, index) => (
               <Box
                 component="li"
                 key={job.id}
                 sx={{
                   animation: "fade-slide-up 0.25s ease both",
+                  animationDelay: `${Math.min(index * 30, 300)}ms`,
                   "@keyframes fade-slide-up": {
                     from: { opacity: 0, transform: "translateY(10px)" },
                     to: { opacity: 1, transform: "translateY(0)" },
@@ -238,7 +239,7 @@ export function JobList({
               py: 6,
               borderRadius: 3,
               border: "1px dashed",
-              borderColor: "grey.300",
+              borderColor: "divider",
             }}
             data-testid="jl-empty"
           >
@@ -286,9 +287,9 @@ export function JobList({
                     gap: 1.5,
                     p: 1.5,
                     borderRadius: 2,
-                    bgcolor: "grey.50",
+                    bgcolor: "action.hover",
                     border: "1px solid",
-                    borderColor: "grey.200",
+                    borderColor: "divider",
                   }}
                 >
                   <Box sx={{ flex: 1 }}>

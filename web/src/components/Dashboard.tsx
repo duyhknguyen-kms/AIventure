@@ -42,7 +42,6 @@ import { useCriteria } from "@/hooks/useCriteria";
 import { useJobs } from "@/hooks/useJobs";
 import { MAX_QUERY_LENGTH, type JobsResult } from "@/lib/jobsClient";
 import { rankJobs } from "@/lib/matching/score";
-import { isSortKey, SORT_OPTIONS, sortRankedJobs, type SortKey } from "@/lib/matching/sort";
 import type { Job, MatchResult } from "@/lib/types";
 
 export const SEARCH_DEBOUNCE_MS = 300;
@@ -60,14 +59,13 @@ function formatTime(iso: string): string | null {
   return Number.isNaN(time) ? null : new Date(time).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 }
 
-type Announcement = { loading: boolean; result: JobsResult | null; shown: number; sort?: SortKey };
-function announcement({ loading, result, shown, sort }: Announcement): string {
+type Announcement = { loading: boolean; result: JobsResult | null; shown: number };
+function announcement({ loading, result, shown }: Announcement): string {
   if (loading || result === null) return "Loading jobs";
   if (!result.ok) return "Could not load jobs";
   if (result.data.jobs.length === 0) return "No jobs available right now";
   if (shown === 0) return "No jobs match your criteria";
-  const sortLabel = sort ? (SORT_OPTIONS.find((o) => o.value === sort)?.announce ?? sort) : "match";
-  return `Showing ${plural(shown, "job")}, sorted by ${sortLabel}`;
+  return `Showing ${plural(shown, "job")}, sorted by match`;
 }
 
 // ── Search bar ─────────────────────────────────────────────────────────────────
@@ -106,7 +104,7 @@ function SearchBar({
               ),
             },
           }}
-          sx={{ width: "100%", "& .MuiOutlinedInput-root": { bgcolor: "white" } }}
+          sx={{ width: "100%", "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
         />
       </Box>
       <Button
@@ -255,12 +253,12 @@ function FeatureCards() {
     { icon: <SpeedIcon sx={{ fontSize: 32, color: "#0891b2" }} />, title: "Fast & transparent", body: "Scoring runs in your browser — instant re-rank on each change, no extra network calls." },
   ];
   return (
-    <Box sx={{ bgcolor: "white", borderBottom: "1px solid", borderColor: "grey.100" }}>
+    <Box sx={{ bgcolor: "background.paper", borderBottom: "1px solid", borderColor: "divider" }}>
       <Container maxWidth="md">
         <Grid container>
           {features.map(({ icon, title, body }, i) => (
             <Grid key={title} size={{ xs: 12, sm: 4 }}>
-              <Box sx={{ p: { xs: 2.5, sm: 3 }, height: "100%", borderRight: { sm: i < 2 ? "1px solid" : "none" }, borderColor: "grey.100", transition: "background 0.18s", "&:hover": { bgcolor: "grey.50" } }}>
+              <Box sx={{ p: { xs: 2.5, sm: 3 }, height: "100%", borderRight: { sm: i < 2 ? "1px solid" : "none" }, borderColor: "divider", transition: "background 0.18s", "&:hover": { bgcolor: "action.hover" } }}>
                 <Box sx={{ mb: 1.25 }}>{icon}</Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>{title}</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>{body}</Typography>
@@ -276,7 +274,7 @@ function FeatureCards() {
 // ── Footer ──────────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <Box component="footer" sx={{ borderTop: 1, borderColor: "divider", mt: 8, py: 4, bgcolor: "white" }}>
+    <Box component="footer" sx={{ borderTop: 1, borderColor: "divider", mt: 8, py: 4, bgcolor: "background.paper" }}>
       <Container maxWidth="lg">
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
           <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
@@ -299,7 +297,7 @@ function Footer() {
 // ── Main Dashboard ───────────────────────────────────────────────────────────────
 export function Dashboard() {
   const { mode, toggle: toggleTheme } = useThemeMode();
-  const { criteria, setCriteria, isLoaded, resetCriteria } = useCriteria();
+  const { criteria, setCriteria, isLoaded } = useCriteria();
   const [searchInput, setSearchInput] = useState("");
   const [query, setQuery] = useState("");
   const [criteriaOpen, setCriteriaOpen] = useState(false);
@@ -320,6 +318,14 @@ export function Dashboard() {
   const jobs = result?.ok ? result.data.jobs : [];
   const { ranked, excluded } = useMemo(() => rankJobs(jobs, criteria), [jobs, criteria]);
 
+  // Category quick-filter: filter ranked jobs by selected category
+  const filteredRanked = useMemo(() => {
+    if (!categoryFilter) return ranked;
+    return ranked.filter((j) =>
+      j.categories.some((c) => c.trim() === categoryFilter)
+    );
+  }, [ranked, categoryFilter]);
+
   const liveCount = result?.ok ? result.data.jobs.length : 0;
   const fetchedAt = result?.ok ? formatTime(result.data.fetchedAt) : null;
 
@@ -338,7 +344,7 @@ export function Dashboard() {
 
   const retryFromCard = () => reload();
 
-  const msg = announcement({ loading, result, shown: ranked.length, sort: "match" });
+  const msg = announcement({ loading, result, shown: filteredRanked.length });
 
   return (
     <>
@@ -423,10 +429,10 @@ export function Dashboard() {
                   top: 80,
                   maxHeight: "calc(100vh - 100px)",
                   overflowY: "auto",
-                  bgcolor: "white",
+                  bgcolor: "background.paper",
                   borderRadius: 3,
                   border: "1px solid",
-                  borderColor: "grey.200",
+                  borderColor: "divider",
                   p: 2.5,
                   "&::-webkit-scrollbar": { width: 6 },
                   "&::-webkit-scrollbar-track": { background: "transparent" },
@@ -509,10 +515,22 @@ export function Dashboard() {
                 </Alert>
               )}
 
+              {/* Stats bar */}
+              <StatsBar jobs={ranked} loading={loading} />
+
+              {/* Category quick-filter */}
+              {!loading && ranked.length > 0 && (
+                <CategoryFilter
+                  jobs={ranked}
+                  selected={categoryFilter}
+                  onChange={setCategoryFilter}
+                />
+              )}
+
               {/* Empty API state */}
               {result?.ok && result.data.jobs.length === 0 && (
                 <Box
-                  sx={{ textAlign: "center", py: 6, borderRadius: 3, border: "1px dashed", borderColor: "grey.300", mb: 2 }}
+                  sx={{ textAlign: "center", py: 6, borderRadius: 3, border: "1px dashed", borderColor: "divider", mb: 2 }}
                   data-testid="empty-api-state"
                 >
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>No jobs available right now</Typography>
@@ -528,7 +546,7 @@ export function Dashboard() {
                 data-testid="results"
               >
                 <JobList
-                  ranked={ranked}
+                  ranked={filteredRanked}
                   excluded={excluded}
                   loading={loading}
                   result={result}

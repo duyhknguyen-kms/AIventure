@@ -6,7 +6,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
-import Chip, { type ChipProps } from "@mui/material/Chip";
+import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
@@ -36,16 +36,11 @@ export interface JobCardProps {
   onSelect?: (job: Job) => void;
 }
 
-const BADGE_COLOR: Readonly<Record<MatchLevel, ChipProps["color"]>> = {
-  Strong: "success",
-  Medium: "warning",
-  Low: "default",
-};
-
+/** Semi-transparent badge backgrounds — work in both light and dark mode. */
 const BADGE_BG: Readonly<Record<MatchLevel, string>> = {
-  Strong: "rgba(27,94,32,0.08)",
-  Medium: "rgba(138,75,0,0.08)",
-  Low: "rgba(0,0,0,0.05)",
+  Strong: "rgba(27,94,32,0.12)",
+  Medium: "rgba(138,75,0,0.12)",
+  Low: "rgba(128,128,128,0.10)",
 };
 
 function CompanyAvatar({ company, logo }: { company: string; logo: string | null }) {
@@ -59,7 +54,7 @@ function CompanyAvatar({ company, logo }: { company: string; logo: string | null
         sx={{
           width: 48,
           height: 48,
-          bgcolor: "grey.100",
+          bgcolor: "action.hover",
           border: "2px solid",
           borderColor: "divider",
           "& img": { objectFit: "contain", p: "4px" },
@@ -76,8 +71,8 @@ function CompanyAvatar({ company, logo }: { company: string; logo: string | null
       sx={{
         width: 48,
         height: 48,
-        bgcolor: "primary.light",
-        color: "white",
+        bgcolor: "primary.main",
+        color: "primary.contrastText",
         fontWeight: 700,
         fontSize: "1rem",
       }}
@@ -99,7 +94,7 @@ function MetaChip({ icon, label, testId }: { icon: React.ReactNode; label: strin
         fontSize: "0.775rem",
         height: 26,
         borderColor: "divider",
-        bgcolor: "grey.50",
+        bgcolor: "action.hover",
         "& .MuiChip-icon": { ml: "6px", mr: "-2px", color: "text.secondary" },
       }}
     />
@@ -143,11 +138,11 @@ export function JobCard({ job, match, mustHave = [], onSelect }: JobCardProps) {
         position: "relative",
         height: "100%",
         border: "1px solid",
-        borderColor: "grey.200",
-        background: "white",
+        borderColor: "divider",
+        bgcolor: "background.paper",
         "&:hover": {
           transform: "translateY(-3px)",
-          boxShadow: "0 8px 32px rgba(26,86,219,0.12)",
+          boxShadow: "0 8px 32px rgba(26,86,219,0.14)",
           borderColor: "primary.light",
         },
         "&:focus-within": {
@@ -184,7 +179,13 @@ export function JobCard({ job, match, mustHave = [], onSelect }: JobCardProps) {
                   py: 0.5,
                 }}
               >
-                <TrendingUpIcon sx={{ fontSize: "0.9rem", color: level === "Strong" ? "success.dark" : level === "Medium" ? "warning.dark" : "text.secondary" }} aria-hidden="true" />
+                <TrendingUpIcon
+                  sx={{
+                    fontSize: "0.9rem",
+                    color: level === "Strong" ? "success.main" : level === "Medium" ? "warning.main" : "text.secondary",
+                  }}
+                  aria-hidden="true"
+                />
                 <Typography
                   variant="caption"
                   component="span"
@@ -192,7 +193,7 @@ export function JobCard({ job, match, mustHave = [], onSelect }: JobCardProps) {
                   sx={{
                     fontWeight: 700,
                     fontSize: "0.78rem",
-                    color: level === "Strong" ? "success.dark" : level === "Medium" ? "warning.dark" : "text.secondary",
+                    color: level === "Strong" ? "success.main" : level === "Medium" ? "warning.main" : "text.secondary",
                   }}
                 >
                   {matchBadgeLabel(match.matchPercent)}
@@ -214,31 +215,32 @@ export function JobCard({ job, match, mustHave = [], onSelect }: JobCardProps) {
         {/* Meta chips */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1.5 }}>
           {employment && (
-            <MetaChip
-              icon={<WorkOutlineIcon />}
-              label={employment}
-              testId="job-card-employment"
-            />
+            <MetaChip icon={<WorkOutlineIcon />} label={employment} testId="job-card-employment" />
           )}
-          <MetaChip
-            icon={<AttachMoneyIcon />}
-            label={salary}
-            testId="job-card-salary"
-          />
+          <MetaChip icon={<AttachMoneyIcon />} label={salary} testId="job-card-salary" />
           <MetaChip
             icon={<PlaceOutlinedIcon />}
             label={location + (match.locationUncertain ? " (location uncertain, check the listing)" : "")}
             testId="job-card-location"
           />
         </Box>
+
+        {/* Benefits */}
         <Box sx={{ position: "relative", zIndex: 1 }}>
           <BenefitChips benefits={match.benefits} mustHave={mustHave} maxVisible={CARD_VISIBLE_BENEFITS} />
         </Box>
 
-        {/* Footer: posted + source */}
+        {/* Footer: posted date + source */}
         <Stack
           direction="row"
-          sx={{ alignItems: "center", justifyContent: "space-between", mt: 1.5, pt: 1.5, borderTop: "1px solid", borderColor: "grey.100" }}
+          sx={{
+            alignItems: "center",
+            justifyContent: "space-between",
+            mt: 1.5,
+            pt: 1.5,
+            borderTop: "1px solid",
+            borderColor: "divider",
+          }}
         >
           {posted && (
             <Typography variant="caption" color="text.disabled">

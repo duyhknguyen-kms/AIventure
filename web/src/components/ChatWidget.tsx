@@ -117,7 +117,7 @@ function Bubble({ message }: { message: Message }) {
             ? "error.50"
             : isUser
             ? "primary.main"
-            : "grey.100",
+            : "action.hover",
           color: isError ? "error.dark" : isUser ? "white" : "text.primary",
           fontSize: "0.85rem",
           lineHeight: 1.6,
@@ -393,7 +393,7 @@ export function ChatWidget({ job }: ChatWidgetProps) {
             overflow: "hidden",
             zIndex: 1200,
             border: "1px solid",
-            borderColor: "grey.200",
+            borderColor: "divider",
           }}
         >
           {/* Header */}
@@ -441,7 +441,7 @@ export function ChatWidget({ job }: ChatWidgetProps) {
 
           {/* Messages */}
           <Box
-            sx={{ flex: 1, overflowY: "auto", px: 2, py: 1.5, bgcolor: "white" }}
+            sx={{ flex: 1, overflowY: "auto", px: 2, py: 1.5, bgcolor: "background.paper" }}
             role="log"
             aria-live="polite"
             aria-label="Chat messages"
@@ -464,9 +464,9 @@ export function ChatWidget({ job }: ChatWidgetProps) {
                       component="button"
                       onClick={() => send(s)}
                       sx={{
-                        bgcolor: "grey.50",
+                        bgcolor: "action.hover",
                         border: "1px solid",
-                        borderColor: "grey.200",
+                        borderColor: "divider",
                         borderRadius: 2,
                         px: 1.5,
                         py: 0.75,
@@ -498,8 +498,8 @@ export function ChatWidget({ job }: ChatWidgetProps) {
               px: 1.5,
               py: 1,
               borderTop: "1px solid",
-              borderColor: "grey.100",
-              bgcolor: "white",
+              borderColor: "divider",
+              bgcolor: "background.paper",
             }}
           >
             <TextField

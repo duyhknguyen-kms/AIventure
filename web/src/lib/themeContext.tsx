@@ -4,8 +4,9 @@
  * ThemeContext — provides dark/light mode toggle, persisted in localStorage.
  */
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { createTheme, ThemeProvider, alpha, type Theme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 
 type Mode = "light" | "dark";
@@ -140,28 +141,38 @@ function buildTheme(mode: Mode): Theme {
 }
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<Mode>("light");
+  // `mounted` becomes true after the first client render so we can read localStorage.
+  const [state, setState] = useState<{ mode: Mode; mounted: boolean }>({
+    mode: "light",
+    mounted: false,
+  });
 
   useEffect(() => {
+    // Runs only on the client after hydration — resolve stored/OS preference.
+    let resolved: Mode = "light";
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as Mode | null;
       if (saved === "dark" || saved === "light") {
-        setMode(saved);
-      } else {
-        // Respect OS preference on first visit
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        setMode(prefersDark ? "dark" : "light");
+        resolved = saved;
+      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        resolved = "dark";
       }
     } catch {
-      // localStorage unavailable
+      // localStorage unavailable — stay on light
     }
+    // Single setState call wrapped in startTransition (non-urgent, avoids compiler warning).
+    startTransition(() => {
+      setState({ mode: resolved, mounted: true });
+    });
   }, []);
 
+  const { mode, mounted } = state;
+
   const toggle = useCallback(() => {
-    setMode((prev) => {
-      const next: Mode = prev === "light" ? "dark" : "light";
+    setState((prev) => {
+      const next: Mode = prev.mode === "light" ? "dark" : "light";
       try { localStorage.setItem(STORAGE_KEY, next); } catch { /* ignore */ }
-      return next;
+      return { mode: next, mounted: prev.mounted };
     });
   }, []);
 

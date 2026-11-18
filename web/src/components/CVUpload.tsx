@@ -200,7 +200,7 @@ function ExtractionPreview({ extraction }: { extraction: CvExtraction }) {
               p: 1.5,
               maxHeight: 160,
               overflowY: "auto",
-              bgcolor: "grey.50",
+              bgcolor: "action.hover",
               borderRadius: 2,
               fontSize: "0.72rem",
               fontFamily: "monospace",
@@ -208,7 +208,7 @@ function ExtractionPreview({ extraction }: { extraction: CvExtraction }) {
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
               border: "1px solid",
-              borderColor: "grey.200",
+              borderColor: "divider",
             }}
           >
             {extraction.rawText || "(empty)"}

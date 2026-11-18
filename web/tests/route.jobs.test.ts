@@ -1,140 +1,128 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/jobs/route";
-import { clearCache } from "@/lib/aggregate/cache";
-import type { Job } from "@/lib/types";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as route from "@/app/api/jobs/route";
+import { type AggregateResult, aggregateJobs } from "@/lib/aggregate/aggregate";
+import type { Job, SourceStatus } from "@/lib/types";
 
-// Mock the aggregator so the route test makes no network calls
-vi.mock("@/lib/aggregate/aggregate", () => ({
-  aggregateJobs: vi.fn(),
-}));
+// Hoisted above the imports by vitest: the route sees the mock.
+vi.mock("@/lib/aggregate/aggregate", () => ({ aggregateJobs: vi.fn() }));
 
-import { aggregateJobs } from "@/lib/aggregate/aggregate";
+const mockedAggregate = vi.mocked(aggregateJobs);
 
-function makeJob(id: string): Job {
-  return {
-    id,
-    source: "himalayas",
-    sourceId: id,
-    title: "Engineer",
-    company: "Acme",
-    companyLogo: null,
-    applyUrl: "https://example.com/apply",
-    sourceUrl: "https://example.com/job",
-    employmentType: "full_time",
-    seniority: [],
-    salary: null,
-    location: { worldwide: true, countries: [], regions: [], raw: null },
-    timezones: null,
-    categories: [],
-    tags: [],
-    excerpt: null,
-    descriptionHtml: "",
-    descriptionText: "",
-    publishedAt: new Date().toISOString(),
-    expiresAt: null,
-    alsoOn: [],
-  };
+const job: Job = {
+  id: "himalayas:https://himalayas.app/companies/acme/jobs/x",
+  source: "himalayas",
+  sourceId: "https://himalayas.app/companies/acme/jobs/x",
+  title: "Senior Frontend Engineer",
+  company: "Acme",
+  companyLogo: null,
+  applyUrl: "https://himalayas.app/companies/acme/jobs/x/apply",
+  sourceUrl: "https://himalayas.app/companies/acme/jobs/x",
+  employmentType: "full_time",
+  seniority: ["senior"],
+  salary: null,
+  location: { worldwide: true, countries: [], regions: [], raw: null },
+  timezones: [],
+  categories: [],
+  tags: [],
+  excerpt: null,
+  descriptionHtml: "<p>Hi</p>",
+  descriptionText: "Hi",
+  publishedAt: "2026-11-16T08:00:00.000Z",
+  expiresAt: null,
+  alsoOn: [],
+};
+
+const ok = (name: SourceStatus["name"], count: number): SourceStatus => ({ name, ok: true, count, cached: false });
+const failed = (name: SourceStatus["name"], error: string): SourceStatus => ({ name, ok: false, count: 0, cached: false, error });
+
+function result(sources: SourceStatus[], jobs: Job[] = []): AggregateResult {
+  return { fetchedAt: "2026-11-17T09:00:00.000Z", sources, jobs };
 }
 
-function makeRequest(params: Record<string, string> = {}) {
-  const url = new URL("http://localhost:3000/api/jobs");
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  return { nextUrl: url } as unknown as import("next/server").NextRequest;
-}
-
-function okAggregate(jobs: Job[] = [makeJob("himalayas:1")]) {
-  return {
-    jobs,
-    fetchedAt: new Date().toISOString(),
-    sources: [
-      { name: "himalayas" as const, ok: true, count: jobs.length, cached: false },
-      { name: "remotive" as const, ok: true, count: 0, cached: false },
-    ],
-  };
-}
+const get = (query = "") => route.GET(new Request(`http://localhost/api/jobs${query}`));
 
 beforeEach(() => {
-  clearCache();
-  vi.clearAllMocks();
+  mockedAggregate.mockReset();
 });
 
-// ── 200 responses ──────────────────────────────────────────────────────────
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
-describe("GET /api/jobs — 200", () => {
-  it("returns jobs, sources, and fetchedAt", async () => {
-    vi.mocked(aggregateJobs).mockResolvedValue(okAggregate());
-
-    const res = await GET(makeRequest());
-    const body = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(Array.isArray(body.jobs)).toBe(true);
-    expect(Array.isArray(body.sources)).toBe(true);
-    expect(typeof body.fetchedAt).toBe("string");
+describe("GET /api/jobs", () => {
+  it("exports only GET, with no segment config that cacheComponents rejects at build", () => {
+    // `runtime` and `dynamic` fail `next build` with cacheComponents on; the
+    // handler is dynamic because it reads request.url (Node is the default runtime).
+    expect(Object.keys(route).sort()).toEqual(["GET"]);
   });
 
-  it("passes q to aggregateJobs", async () => {
-    vi.mocked(aggregateJobs).mockResolvedValue(okAggregate());
+  it("returns { fetchedAt, sources, jobs } with 200", async () => {
+    mockedAggregate.mockResolvedValue(result([ok("himalayas", 1), ok("remotive", 0)], [job]));
 
-    await GET(makeRequest({ q: "react" }));
+    const response = await get("?q=%20react%20");
 
-    expect(aggregateJobs).toHaveBeenCalledWith({ q: "react" });
-  });
-
-  it("returns 200 even when one source failed (partial results)", async () => {
-    vi.mocked(aggregateJobs).mockResolvedValue({
-      jobs: [makeJob("himalayas:1")],
-      fetchedAt: new Date().toISOString(),
-      sources: [
-        { name: "himalayas", ok: true, count: 1, cached: false },
-        { name: "remotive", ok: false, count: 0, cached: false, error: "HTTP 503" },
-      ],
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toEqual({
+      fetchedAt: "2026-11-17T09:00:00.000Z",
+      sources: [ok("himalayas", 1), ok("remotive", 0)],
+      jobs: [job],
     });
-
-    const res = await GET(makeRequest());
-    expect(res.status).toBe(200);
-  });
-});
-
-// ── 400 — invalid q ────────────────────────────────────────────────────────
-
-describe("GET /api/jobs — 400", () => {
-  it("rejects q longer than 100 characters", async () => {
-    const q = "a".repeat(101);
-    const res = await GET(makeRequest({ q }));
-
-    expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(body.error).toBeDefined();
+    expect(mockedAggregate).toHaveBeenCalledWith({ q: "react" });
   });
 
-  it("accepts q exactly 100 characters", async () => {
-    vi.mocked(aggregateJobs).mockResolvedValue(okAggregate());
-    const q = "a".repeat(100);
-    const res = await GET(makeRequest({ q }));
-    expect(res.status).toBe(200);
+  it("calls aggregateJobs without q when it is missing or blank", async () => {
+    mockedAggregate.mockResolvedValue(result([ok("himalayas", 0), ok("remotive", 0)]));
+    await get();
+    await get("?q=%20%20");
+    expect(mockedAggregate).toHaveBeenNthCalledWith(1, { q: undefined });
+    expect(mockedAggregate).toHaveBeenNthCalledWith(2, { q: undefined });
   });
-});
 
-// ── 502 — both sources fail ────────────────────────────────────────────────
+  it("still returns 200 when one source failed", async () => {
+    const sources = [ok("himalayas", 1), failed("remotive", "HTTP 429 (retry after 60s)")];
+    mockedAggregate.mockResolvedValue(result(sources, [job]));
 
-describe("GET /api/jobs — 502", () => {
-  it("returns 502 when all sources fail with no cached data", async () => {
-    vi.mocked(aggregateJobs).mockResolvedValue({
-      jobs: [],
-      fetchedAt: new Date().toISOString(),
-      sources: [
-        { name: "himalayas", ok: false, count: 0, cached: false, error: "HTTP 503" },
-        { name: "remotive", ok: false, count: 0, cached: false, error: "HTTP 503" },
-      ],
-    });
+    const response = await get();
 
-    const res = await GET(makeRequest());
-    const body = await res.json();
+    expect(response.status).toBe(200);
+    expect((await response.json()).sources).toEqual(sources);
+  });
 
-    expect(res.status).toBe(502);
-    expect(body.error).toBe("All sources unavailable");
-    expect(Array.isArray(body.sources)).toBe(true);
+  it("returns 400 when q is longer than 100 characters", async () => {
+    const response = await get(`?q=${"a".repeat(101)}`);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: expect.stringContaining("100") });
+    expect(mockedAggregate).not.toHaveBeenCalled();
+  });
+
+  it("accepts exactly 100 characters", async () => {
+    mockedAggregate.mockResolvedValue(result([ok("himalayas", 0), ok("remotive", 0)]));
+    expect((await get(`?q=${"a".repeat(100)}`)).status).toBe(200);
+  });
+
+  it("returns 502 when both sources fail and no stale cache exists", async () => {
+    const sources = [failed("himalayas", "Network error"), failed("remotive", "HTTP 503")];
+    mockedAggregate.mockResolvedValue(result(sources));
+
+    const response = await get();
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "All sources unavailable", sources });
+  });
+
+  it("returns a generic 500 and logs the error on the server", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockedAggregate.mockRejectedValue(new Error("boom: internal detail"));
+
+    const response = await get();
+
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body).toEqual({ error: "Internal server error" });
+    expect(JSON.stringify(body)).not.toContain("internal detail");
+    expect(log).toHaveBeenCalledWith("[api/jobs] unexpected error:", expect.stringContaining("boom"));
   });
 });

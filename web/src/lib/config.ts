@@ -1,31 +1,59 @@
-// §7.2 — Scoring weights (must sum to 100)
-export const WEIGHTS = {
-  skills:     30,
-  title:      20,
-  seniority:  10,
-  salary:     15,
-  employment:  5,
-  timezone:    5,
-  benefits:   15,
-} as const satisfies Record<string, number>;
+import type { FactorResult } from "@/lib/types";
 
-// Verify at module load — caught by the unit test and by import itself.
-const weightSum = Object.values(WEIGHTS).reduce((a, b) => a + b, 0);
-if (weightSum !== 100) {
-  throw new Error(`WEIGHTS must sum to 100, got ${weightSum}`);
+/**
+ * Scoring weights per factor (SPEC §7.2). They sum to 100; a unit test
+ * guards that invariant.
+ */
+export const WEIGHTS: Readonly<Record<FactorResult["key"], number>> = Object.freeze({
+  skills: 30,
+  title: 20,
+  seniority: 10,
+  salary: 15,
+  employment: 5,
+  timezone: 5,
+  benefits: 15,
+});
+
+/** localStorage key for the user's criteria (SPEC §6). */
+export const CRITERIA_STORAGE_KEY = "aiventure.criteria.v1";
+
+export const DEFAULT_CACHE_TTL_SECONDS = 21600; // 6 h
+export const DEFAULT_HIMALAYAS_MAX_PAGES = 5;
+
+/**
+ * Reads a positive integer from the environment. Missing values fall back to
+ * the default silently; malformed values fall back with a warning so a typo in
+ * `.env.local` is visible in the server log.
+ */
+export function readPositiveIntEnv(
+  name: string,
+  fallback: number,
+  env: Record<string, string | undefined> = process.env,
+): number {
+  const raw = env[name];
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const value = Number(raw.trim());
+  if (!Number.isInteger(value) || value <= 0) {
+    console.warn(`[config] ${name}="${raw}" is not a positive integer; using ${fallback}.`);
+    return fallback;
+  }
+  return value;
 }
 
-// §5.5 — Cache
-export const DEFAULT_CACHE_TTL_SECONDS = 21_600; // 6 h
-export const DEFAULT_HIMALAYAS_MAX_PAGES = 5;    // 5 × 20 = up to 100 jobs
+/*
+ * Server-side settings (SPEC §5.6). They are read from plain (non
+ * NEXT_PUBLIC_) env vars, so Next.js never inlines them into the client
+ * bundle; in the browser they resolve to their defaults and are unused there.
+ */
 
-// §5.1 — Himalayas
-export const HIMALAYAS_PAGE_SIZE = 20;
-export const HIMALAYAS_BROWSE_URL = "https://himalayas.app/jobs/api";
-export const HIMALAYAS_SEARCH_URL = "https://himalayas.app/jobs/api/search";
+/** Lifetime of cached upstream responses, seconds. */
+export const CACHE_TTL_SECONDS = readPositiveIntEnv(
+  "CACHE_TTL_SECONDS",
+  DEFAULT_CACHE_TTL_SECONDS,
+);
 
-// §5.2 — Remotive
-export const REMOTIVE_URL = "https://remotive.com/api/remote-jobs";
-
-// §6 — Criteria
-export const CRITERIA_STORAGE_KEY = "aiventure.criteria.v1";
+/** Max Himalayas pages fetched per refresh (20 jobs/page). */
+export const HIMALAYAS_MAX_PAGES = readPositiveIntEnv(
+  "HIMALAYAS_MAX_PAGES",
+  DEFAULT_HIMALAYAS_MAX_PAGES,
+);

@@ -1,322 +1,271 @@
-/**
- * §7.3–7.4 — Scoring engine
- * All functions are pure (no I/O, no Date.now()).
- */
-import type { Job, FactorResult, MatchResult } from "@/lib/types";
-import type { Criteria } from "./criteria";
 import { WEIGHTS } from "@/lib/config";
+import { extractBenefits } from "@/lib/matching/benefits";
+import type { Criteria } from "@/lib/matching/criteria";
+import {
+  applyHardFilters,
+  haystack,
+  isLocationUncertain,
+  matchedTerms,
+  matchesTerm,
+  type ExcludedJob,
+} from "@/lib/matching/filters";
 import { SENIORITY_LADDER } from "@/lib/normalize/seniority";
-import { extractBenefits } from "./benefits";
-import { applyHardFilters, isLocationUncertain, haystack } from "./filters";
+import type { BenefitKey, DetectedBenefit, FactorResult, Job, MatchResult } from "@/lib/types";
 
-// ── Text helpers ──────────────────────────────────────────────────────────
+/**
+ * Scoring and ranking (SPEC §7.2 to §7.4, FR7). Pure functions: no I/O and no
+ * clock, so they give the same result on the server and in the browser.
+ */
 
-function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+type FactorKey = FactorResult["key"];
+
+/** A factor's score (0..1) and explanation, or null when the factor is inactive. */
+interface FactorOutcome {
+  score: number;
+  detail: string;
 }
 
-/** Normalise hyphens to spaces (mirrors filters.ts). */
-function normaliseHyphens(s: string): string {
-  return s.replace(/-/g, " ");
+/** Factor order used in `MatchResult.factors` (SPEC §7.2 table order). */
+export const FACTOR_KEYS: readonly FactorKey[] = Object.freeze([
+  "skills",
+  "title",
+  "seniority",
+  "salary",
+  "employment",
+  "timezone",
+  "benefits",
+]);
+
+const INACTIVE_DETAIL = "Not set in your criteria";
+
+/** Distances up to this are treated as equal, to absorb float noise. */
+const EPSILON = 1e-9;
+
+function formatAmount(amount: number): string {
+  return Math.round(amount).toLocaleString("en-US");
 }
 
-function termMatches(term: string, text: string): boolean {
-  const normTerm = normaliseHyphens(term.toLowerCase());
-  const normText = normaliseHyphens(text);
-  return new RegExp(`\\b${escapeRegex(normTerm)}\\b`).test(normText);
+function formatOffset(hours: number): string {
+  const sign = hours < 0 ? "-" : "+";
+  const abs = Math.abs(hours);
+  const whole = Math.floor(abs);
+  const minutes = Math.round((abs - whole) * 60);
+  return minutes === 0 ? `UTC${sign}${whole}` : `UTC${sign}${whole}:${String(minutes).padStart(2, "0")}`;
 }
 
-// ── Factor scorers ────────────────────────────────────────────────────────
-
-function scoreSkills(job: Job, criteria: Criteria): FactorResult {
-  const h = haystack(job);
-  const matched = criteria.keywords.filter((kw) => termMatches(kw, h));
-  const score = criteria.keywords.length > 0
-    ? matched.length / criteria.keywords.length
-    : 1;
-
-  return {
-    key: "skills",
-    weight: WEIGHTS.skills,
-    active: criteria.keywords.length > 0,
-    score,
-    points: WEIGHTS.skills * score,
-    detail: criteria.keywords.length > 0
-      ? `${matched.length}/${criteria.keywords.length} skills: ${matched.join(", ") || "none"}`
-      : "no keywords set",
-  };
+function formatHours(hours: number): string {
+  return `${Number(hours.toFixed(2))} h`;
 }
 
-function scoreTitle(job: Job, criteria: Criteria): FactorResult {
-  if (criteria.targetTitles.length === 0) {
-    return { key: "title", weight: WEIGHTS.title, active: false, score: 0, points: 0, detail: "no target titles" };
-  }
+// ---------------------------------------------------------------------------
+// Factors (SPEC §7.3)
+// ---------------------------------------------------------------------------
 
-  const jobTitle = job.title.toLowerCase();
-  let score = 0;
-  let detail = "";
+function scoreSkills(job: Job, keywords: readonly string[]): FactorOutcome | null {
+  if (keywords.length === 0) return null;
+  const matched = matchedTerms(haystack(job), keywords);
+  const missing = keywords.filter((k) => !matched.includes(k));
+  let detail = `${matched.length}/${keywords.length} skills`;
+  if (matched.length > 0) detail += `: ${matched.join(", ")}`;
+  if (missing.length > 0) detail += ` (missing: ${missing.join(", ")})`;
+  return { score: matched.length / keywords.length, detail };
+}
 
-  // 1 if any full phrase found in title
-  for (const target of criteria.targetTitles) {
-    if (jobTitle.includes(target.toLowerCase())) {
-      score = 1;
-      detail = `"${target}" found in title`;
-      break;
+function tokenOverlap(title: string, target: string): number {
+  const tokens = target.trim().split(/\s+/).filter((t) => t.length > 0);
+  if (tokens.length === 0) return 0;
+  return tokens.filter((token) => matchesTerm(title, token)).length / tokens.length;
+}
+
+function scoreTitle(job: Job, targetTitles: readonly string[]): FactorOutcome | null {
+  if (targetTitles.length === 0) return null;
+  const phrase = targetTitles.find((target) => matchesTerm(job.title, target));
+  if (phrase !== undefined) return { score: 1, detail: `"${phrase.trim()}" found in title` };
+
+  let best = 0;
+  let bestTarget = targetTitles[0];
+  for (const target of targetTitles) {
+    const overlap = tokenOverlap(job.title, target);
+    if (overlap > best) {
+      best = overlap;
+      bestTarget = target;
     }
   }
-
-  // Otherwise best token overlap
-  if (score < 1) {
-    let best = 0;
-    let bestTarget = "";
-    for (const target of criteria.targetTitles) {
-      const tokens = target.toLowerCase().split(/\s+/).filter(Boolean);
-      const found = tokens.filter((t) => jobTitle.includes(t)).length;
-      const overlap = found / tokens.length;
-      if (overlap > best) {
-        best = overlap;
-        bestTarget = target;
-      }
-    }
-    score = best;
-    detail = `best token overlap ${Math.round(best * 100)}% for "${bestTarget}"`;
-  }
-
-  return {
-    key: "title",
-    weight: WEIGHTS.title,
-    active: true,
-    score,
-    points: WEIGHTS.title * score,
-    detail,
-  };
+  const detail =
+    best === 0
+      ? `No target title words in "${job.title}"`
+      : `${Math.round(best * 100)}% of the words of "${bestTarget.trim()}" in title`;
+  return { score: best, detail };
 }
 
-function scoreSeniority(job: Job, criteria: Criteria): FactorResult {
-  if (criteria.seniority.length === 0) {
-    return { key: "seniority", weight: WEIGHTS.seniority, active: false, score: 0, points: 0, detail: "no seniority set" };
-  }
+function scoreSeniority(job: Job, wanted: Criteria["seniority"]): FactorOutcome | null {
+  if (wanted.length === 0) return null;
+  if (job.seniority.length === 0) return { score: 0.5, detail: "Seniority not listed" };
+  const hit = job.seniority.find((level) => wanted.includes(level));
+  if (hit !== undefined) return { score: 1, detail: `${hit} matches` };
 
-  // Unknown job seniority → 0.5
-  if (job.seniority.length === 0) {
-    return {
-      key: "seniority", weight: WEIGHTS.seniority, active: true,
-      score: 0.5, points: WEIGHTS.seniority * 0.5, detail: "job seniority unknown",
-    };
-  }
-
-  // Exact match
-  const intersects = job.seniority.some((s) => criteria.seniority.includes(s));
-  if (intersects) {
-    return {
-      key: "seniority", weight: WEIGHTS.seniority, active: true,
-      score: 1, points: WEIGHTS.seniority, detail: "seniority matches",
-    };
-  }
-
-  // Proximity on the ladder — min distance between any pair
-  let minDist = Infinity;
-  for (const jobLevel of job.seniority) {
-    for (const criLevel of criteria.seniority) {
-      const dist = Math.abs(SENIORITY_LADDER.indexOf(jobLevel) - SENIORITY_LADDER.indexOf(criLevel));
-      if (dist < minDist) minDist = dist;
+  let nearest = Number.POSITIVE_INFINITY;
+  for (const level of job.seniority) {
+    for (const target of wanted) {
+      nearest = Math.min(nearest, Math.abs(SENIORITY_LADDER.indexOf(level) - SENIORITY_LADDER.indexOf(target)));
     }
   }
+  const jobLevels = job.seniority.join(", ");
+  if (nearest === 1) return { score: 0.5, detail: `${jobLevels} is 1 step from ${wanted.join(", ")}` };
+  return { score: 0, detail: `${jobLevels}, wanted ${wanted.join(", ")}` };
+}
 
-  const score = minDist === 1 ? 0.5 : 0;
+function scoreSalary(job: Job, minSalary: Criteria["minSalary"]): FactorOutcome | null {
+  if (minSalary === null) return null;
+  const currency = minSalary.currency.trim().toUpperCase();
+  const floor = `${formatAmount(minSalary.amount)} ${currency}`;
+  const salary = job.salary;
+  if (salary === null || (salary.annualMin === null && salary.annualMax === null)) {
+    return { score: 0.5, detail: "Salary not listed" };
+  }
+  if (salary.currency === null || salary.currency.toUpperCase() !== currency) {
+    return { score: 0.5, detail: `Salary in ${salary.currency ?? "an unknown currency"}, not ${currency}` };
+  }
+  const { annualMin, annualMax } = salary;
+  if (annualMin !== null && annualMin >= minSalary.amount) {
+    return { score: 1, detail: `annualMin ${formatAmount(annualMin)} ≥ ${floor}` };
+  }
+  if (annualMax !== null && annualMax >= minSalary.amount) {
+    const range = annualMin === null ? `up to ${formatAmount(annualMax)}` : `${formatAmount(annualMin)} to ${formatAmount(annualMax)}`;
+    return { score: 0.75, detail: `${floor} is within the range ${range}` };
+  }
+  const top = annualMax ?? annualMin ?? 0;
+  return { score: 0, detail: `Pays up to ${formatAmount(top)} ${currency}, below ${floor}` };
+}
+
+function scoreEmployment(job: Job, wanted: Criteria["employmentTypes"]): FactorOutcome | null {
+  if (wanted.length === 0) return null;
+  if (job.employmentType === null) return { score: 0.5, detail: "Employment type not listed" };
+  if (wanted.includes(job.employmentType)) return { score: 1, detail: job.employmentType };
+  return { score: 0, detail: `${job.employmentType}, wanted ${wanted.join(", ")}` };
+}
+
+function scoreTimezone(job: Job, userOffset: Criteria["timezoneOffset"]): FactorOutcome | null {
+  if (userOffset === null) return null;
+  const user = formatOffset(userOffset);
+  if (job.timezones === null) return { score: 0.5, detail: "Time zones not listed" };
+  if (job.timezones.length === 0) return { score: 1, detail: "Open to all time zones" };
+
+  let nearest = job.timezones[0];
+  for (const tz of job.timezones) {
+    if (Math.abs(tz - userOffset) < Math.abs(nearest - userOffset)) nearest = tz;
+  }
+  const distance = Math.abs(nearest - userOffset);
+  const gap = `nearest ${formatOffset(nearest)} is ${formatHours(distance)} from ${user}`;
+  if (distance <= 0.5 + EPSILON) return { score: 1, detail: `Accepts ${user} (${gap})` };
+  if (distance <= 2 + EPSILON) return { score: 0.5, detail: gap[0].toUpperCase() + gap.slice(1) };
+  return { score: 0, detail: gap[0].toUpperCase() + gap.slice(1) };
+}
+
+function unique<T>(values: readonly T[]): T[] {
+  return [...new Set(values)];
+}
+
+function scoreBenefits(detected: readonly DetectedBenefit[], criteria: Criteria): FactorOutcome | null {
+  // A benefit listed as both must-have and nice-to-have counts once, as must-have.
+  const must = unique(criteria.mustHaveBenefits);
+  const nice = unique(criteria.niceToHaveBenefits).filter((key) => !must.includes(key));
+  if (must.length === 0 && nice.length === 0) return null;
+
+  const found = new Set<BenefitKey>(detected.map((b) => b.key));
+  const mustFound = must.filter((key) => found.has(key));
+  const niceFound = nice.filter((key) => found.has(key));
+  const score = (2 * mustFound.length + niceFound.length) / (2 * must.length + nice.length);
+
+  const parts: string[] = [];
+  if (must.length > 0) parts.push(`must-have ${mustFound.length}/${must.length}${list(mustFound)}`);
+  if (nice.length > 0) parts.push(`nice-to-have ${niceFound.length}/${nice.length}${list(niceFound)}`);
+  const detail = parts.join(", ");
+  return { score, detail: detail[0].toUpperCase() + detail.slice(1) };
+}
+
+function list(keys: readonly string[]): string {
+  return keys.length === 0 ? "" : ` (${keys.join(", ")})`;
+}
+
+// ---------------------------------------------------------------------------
+// scoreJob, rankJobs
+// ---------------------------------------------------------------------------
+
+function factorOutcomes(
+  job: Job,
+  criteria: Criteria,
+  benefits: readonly DetectedBenefit[],
+): Record<FactorKey, FactorOutcome | null> {
   return {
-    key: "seniority", weight: WEIGHTS.seniority, active: true,
-    score, points: WEIGHTS.seniority * score,
-    detail: minDist === 1 ? "1 level away" : `${minDist} levels away`,
+    skills: scoreSkills(job, criteria.keywords),
+    title: scoreTitle(job, criteria.targetTitles),
+    seniority: scoreSeniority(job, criteria.seniority),
+    salary: scoreSalary(job, criteria.minSalary),
+    employment: scoreEmployment(job, criteria.employmentTypes),
+    timezone: scoreTimezone(job, criteria.timezoneOffset),
+    benefits: scoreBenefits(benefits, criteria),
   };
 }
 
-function scoreSalary(job: Job, criteria: Criteria): FactorResult {
-  if (criteria.minSalary === null) {
-    return { key: "salary", weight: WEIGHTS.salary, active: false, score: 0, points: 0, detail: "no salary requirement" };
-  }
-
-  const { amount, currency } = criteria.minSalary;
-
-  // Unknown salary or currency mismatch → 0.5
-  if (!job.salary || job.salary.currency !== currency) {
-    const reason = !job.salary ? "salary unknown" : "currency differs";
-    return {
-      key: "salary", weight: WEIGHTS.salary, active: true,
-      score: 0.5, points: WEIGHTS.salary * 0.5, detail: reason,
-    };
-  }
-
-  const { annualMin, annualMax } = job.salary;
-
-  if (annualMin !== null && annualMin >= amount) {
-    return {
-      key: "salary", weight: WEIGHTS.salary, active: true,
-      score: 1, points: WEIGHTS.salary,
-      detail: `annualMin ${annualMin} ≥ ${amount} ${currency}`,
-    };
-  }
-
-  // annualMin < amount ≤ annualMax, or only annualMax known and ≥ amount
-  if (
-    (annualMax !== null && annualMax >= amount && (annualMin === null || annualMin < amount)) ||
-    (annualMin === null && annualMax !== null && annualMax >= amount)
-  ) {
-    return {
-      key: "salary", weight: WEIGHTS.salary, active: true,
-      score: 0.75, points: WEIGHTS.salary * 0.75,
-      detail: `range straddles floor (annualMax ${annualMax} ≥ ${amount} ${currency})`,
-    };
-  }
-
-  return {
-    key: "salary", weight: WEIGHTS.salary, active: true,
-    score: 0, points: 0,
-    detail: `annualMax ${annualMax} < ${amount} ${currency}`,
-  };
+/**
+ * Weighted, renormalized percentage over the active factors (SPEC §7.3). The
+ * ratio is rounded to 6 decimals first, so float noise such as 87.4999999
+ * cannot flip the final integer rounding. No active factor gives 100.
+ */
+export function computeMatchPercent(factors: readonly FactorResult[]): number {
+  const active = factors.filter((f) => f.active);
+  const totalWeight = active.reduce((sum, f) => sum + f.weight, 0);
+  if (active.length === 0 || totalWeight === 0) return 100;
+  const points = active.reduce((sum, f) => sum + f.points, 0);
+  return Math.round(Number(((100 * points) / totalWeight).toFixed(6)));
 }
 
-function scoreEmployment(job: Job, criteria: Criteria): FactorResult {
-  if (criteria.employmentTypes.length === 0) {
-    return { key: "employment", weight: WEIGHTS.employment, active: false, score: 0, points: 0, detail: "no employment type set" };
-  }
-
-  if (job.employmentType === null) {
-    return {
-      key: "employment", weight: WEIGHTS.employment, active: true,
-      score: 0.5, points: WEIGHTS.employment * 0.5, detail: "employment type unknown",
-    };
-  }
-
-  const matches = criteria.employmentTypes.includes(job.employmentType);
-  return {
-    key: "employment", weight: WEIGHTS.employment, active: true,
-    score: matches ? 1 : 0, points: matches ? WEIGHTS.employment : 0,
-    detail: matches ? job.employmentType : `${job.employmentType} not in list`,
-  };
-}
-
-function scoreTimezone(job: Job, criteria: Criteria): FactorResult {
-  if (criteria.timezoneOffset === null) {
-    return { key: "timezone", weight: WEIGHTS.timezone, active: false, score: 0, points: 0, detail: "no timezone set" };
-  }
-
-  const userOffset = criteria.timezoneOffset;
-
-  // All timezones
-  if (Array.isArray(job.timezones) && job.timezones.length === 0) {
-    return {
-      key: "timezone", weight: WEIGHTS.timezone, active: true,
-      score: 1, points: WEIGHTS.timezone, detail: "all timezones accepted",
-    };
-  }
-
-  // Unknown timezones
-  if (job.timezones === null) {
-    return {
-      key: "timezone", weight: WEIGHTS.timezone, active: true,
-      score: 0.5, points: WEIGHTS.timezone * 0.5, detail: "timezone unknown",
-    };
-  }
-
-  // Find minimum distance
-  const minDist = Math.min(...job.timezones.map((tz) => Math.abs(tz - userOffset)));
-
-  if (minDist <= 0.5) {
-    return {
-      key: "timezone", weight: WEIGHTS.timezone, active: true,
-      score: 1, points: WEIGHTS.timezone,
-      detail: `within 0.5 h (nearest ${job.timezones.find((tz) => Math.abs(tz - userOffset) === minDist)})`,
-    };
-  }
-
-  if (minDist <= 2) {
-    return {
-      key: "timezone", weight: WEIGHTS.timezone, active: true,
-      score: 0.5, points: WEIGHTS.timezone * 0.5,
-      detail: `nearest offset is ${minDist} h away`,
-    };
-  }
-
-  return {
-    key: "timezone", weight: WEIGHTS.timezone, active: true,
-    score: 0, points: 0,
-    detail: `nearest offset is ${minDist} h away`,
-  };
-}
-
-function scoreBenefits(job: Job, criteria: Criteria, detected: ReturnType<typeof extractBenefits>): FactorResult {
-  const { mustHaveBenefits: must, niceToHaveBenefits: nice } = criteria;
-  const active = must.length > 0 || nice.length > 0;
-
-  if (!active) {
-    return { key: "benefits", weight: WEIGHTS.benefits, active: false, score: 0, points: 0, detail: "no benefits required" };
-  }
-
-  const detectedKeys = new Set(detected.map((b) => b.key));
-  const mustFound = must.filter((k) => detectedKeys.has(k)).length;
-  const niceFound = nice.filter((k) => detectedKeys.has(k)).length;
-  const mustTotal = must.length;
-  const niceTotal = nice.length;
-
-  const score = (2 * mustFound + niceFound) / (2 * mustTotal + niceTotal);
-
-  return {
-    key: "benefits", weight: WEIGHTS.benefits, active: true,
-    score, points: WEIGHTS.benefits * score,
-    detail: `must ${mustFound}/${mustTotal}, nice ${niceFound}/${niceTotal}`,
-  };
-}
-
-// ── Main scoring ──────────────────────────────────────────────────────────
-
+/** Scores one job against the criteria (SPEC §7.3, §7.4, FR7.1 to FR7.7). */
 export function scoreJob(job: Job, criteria: Criteria): MatchResult {
-  const detected = extractBenefits(job);
-
-  const factors: FactorResult[] = [
-    scoreSkills(job, criteria),
-    scoreTitle(job, criteria),
-    scoreSeniority(job, criteria),
-    scoreSalary(job, criteria),
-    scoreEmployment(job, criteria),
-    scoreTimezone(job, criteria),
-    scoreBenefits(job, criteria, detected),
-  ];
-
-  const activeFactors = factors.filter((f) => f.active);
-
-  let matchPercent: number;
-  if (activeFactors.length === 0) {
-    matchPercent = 100;
-  } else {
-    const totalWeight = activeFactors.reduce((s, f) => s + f.weight, 0);
-    const totalPoints = activeFactors.reduce((s, f) => s + f.points, 0);
-    matchPercent = Math.round((100 * totalPoints) / totalWeight);
-  }
-
+  const benefits = extractBenefits(job);
+  const outcomes = factorOutcomes(job, criteria, benefits);
+  const factors: FactorResult[] = FACTOR_KEYS.map((key) => {
+    const outcome = outcomes[key];
+    const weight = WEIGHTS[key];
+    if (outcome === null) return { key, weight, active: false, score: 0, points: 0, detail: INACTIVE_DETAIL };
+    return { key, weight, active: true, score: outcome.score, points: weight * outcome.score, detail: outcome.detail };
+  });
   return {
     jobId: job.id,
-    matchPercent,
+    matchPercent: computeMatchPercent(factors),
     factors,
-    benefits: detected,
-    locationUncertain: isLocationUncertain(job),
+    benefits,
+    locationUncertain: isLocationUncertain(job, criteria),
   };
 }
 
-export function rankJobs(
-  jobs: Job[],
-  criteria: Criteria,
-): { ranked: (Job & { match: MatchResult })[]; excluded: { job: Job; reason: string }[] } {
+export type RankedJob = Job & { match: MatchResult };
+
+export interface RankResult {
+  ranked: RankedJob[];
+  excluded: ExcludedJob[];
+}
+
+function publishedTime(job: Job): number {
+  const time = Date.parse(job.publishedAt);
+  return Number.isNaN(time) ? Number.NEGATIVE_INFINITY : time;
+}
+
+/**
+ * Hard filters, then a score per job, then sort by `matchPercent` desc with
+ * ties broken by `publishedAt` desc (SPEC §7.4). A job with an unparseable
+ * `publishedAt` sorts last among its ties; the job id breaks any remaining tie
+ * so the order is deterministic.
+ */
+export function rankJobs(jobs: readonly Job[], criteria: Criteria): RankResult {
   const { kept, excluded } = applyHardFilters(jobs, criteria);
-
-  const ranked = kept
-    .map((job) => ({ ...job, match: scoreJob(job, criteria) }))
-    .sort((a, b) => {
-      const diff = b.match.matchPercent - a.match.matchPercent;
-      if (diff !== 0) return diff;
-      // Tie-break by publishedAt descending
-      return b.publishedAt.localeCompare(a.publishedAt);
-    });
-
+  const ranked = kept.map((job): RankedJob => ({ ...job, match: scoreJob(job, criteria) }));
+  ranked.sort(
+    (a, b) =>
+      b.match.matchPercent - a.match.matchPercent ||
+      publishedTime(b) - publishedTime(a) ||
+      (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
   return { ranked, excluded };
 }

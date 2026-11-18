@@ -1,148 +1,217 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest";
-import { applyHardFilters } from "@/lib/matching/filters";
-import { DEFAULT_CRITERIA } from "@/lib/matching/criteria";
-import type { Job } from "@/lib/types";
-import type { Criteria } from "@/lib/matching/criteria";
+import { describe, expect, it } from "vitest";
+import { DEFAULT_CRITERIA, type Criteria } from "@/lib/matching/criteria";
+import {
+  COUNTRY_REGION,
+  applyHardFilters,
+  evaluateLocation,
+  haystack,
+  isLocationUncertain,
+  matchedTerms,
+  matchesTerm,
+  regionOfCountry,
+} from "@/lib/matching/filters";
+import { COUNTRY_LOOKUP, REGION_LOOKUP, parseRemotiveLocation } from "@/lib/normalize/location";
+import type { Job, Salary } from "@/lib/types";
 
 function makeJob(overrides: Partial<Job> = {}): Job {
   return {
-    id: "himalayas:1", source: "himalayas", sourceId: "1",
-    title: "Senior Engineer", company: "Acme",
-    companyLogo: null, applyUrl: "", sourceUrl: "",
-    employmentType: "full_time", seniority: ["senior"],
-    salary: { min: 120_000, max: 150_000, currency: "USD", period: "annual", annualMin: 120_000, annualMax: 150_000, raw: null },
+    id: "himalayas:test-1",
+    source: "himalayas",
+    sourceId: "test-1",
+    title: "Senior Frontend Engineer",
+    company: "Acme",
+    companyLogo: null,
+    applyUrl: "https://example.com/apply",
+    sourceUrl: "https://example.com/job",
+    employmentType: "full_time",
+    seniority: ["senior"],
+    salary: null,
     location: { worldwide: true, countries: [], regions: [], raw: null },
-    timezones: [], categories: [], tags: [],
-    excerpt: null, descriptionHtml: "", descriptionText: "",
-    publishedAt: "2026-01-01T00:00:00.000Z", expiresAt: null, alsoOn: [],
+    timezones: [],
+    categories: [],
+    tags: [],
+    excerpt: null,
+    descriptionHtml: "",
+    descriptionText: "",
+    publishedAt: "2026-11-01T00:00:00.000Z",
+    expiresAt: null,
+    alsoOn: [],
     ...overrides,
   };
 }
 
-function criteria(overrides: Partial<Criteria> = {}): Criteria {
+function makeCriteria(overrides: Partial<Criteria> = {}): Criteria {
   return { ...DEFAULT_CRITERIA, ...overrides };
 }
 
-// ── Default criteria keeps all jobs ──────────────────────────────────────
+function usd(annualMin: number | null, annualMax: number | null, currency: string | null = "USD"): Salary {
+  return { min: annualMin, max: annualMax, currency, period: "annual", annualMin, annualMax, raw: null };
+}
 
-describe("applyHardFilters — default criteria", () => {
-  it("keeps all jobs when criteria is default", () => {
-    const jobs = [makeJob(), makeJob({ id: "remotive:2" })];
-    const { kept, excluded } = applyHardFilters(jobs, DEFAULT_CRITERIA);
-    expect(kept).toHaveLength(2);
-    expect(excluded).toHaveLength(0);
-  });
+const restricted = (countries: string[], regions: string[] = []) => ({
+  worldwide: false,
+  countries,
+  regions,
+  raw: null,
 });
 
-// ── F1 — Location ─────────────────────────────────────────────────────────
-
-describe("applyHardFilters — F1 location", () => {
-  it("skips F1 when country is null", () => {
-    const job = makeJob({ location: { worldwide: false, countries: ["US"], regions: [], raw: null } });
-    const { kept } = applyHardFilters([job], criteria({ country: null }));
-    expect(kept).toHaveLength(1);
-  });
-
-  it("keeps worldwide jobs regardless of user country", () => {
-    const job = makeJob({ location: { worldwide: true, countries: [], regions: [], raw: null } });
-    const { kept } = applyHardFilters([job], criteria({ country: "VN" }));
-    expect(kept).toHaveLength(1);
-  });
-
-  it("keeps job when user country is in location.countries", () => {
-    const job = makeJob({ location: { worldwide: false, countries: ["VN", "SG"], regions: [], raw: null } });
-    const { kept } = applyHardFilters([job], criteria({ country: "VN" }));
-    expect(kept).toHaveLength(1);
-  });
-
-  it("keeps job when user country region matches location.regions", () => {
-    const job = makeJob({ location: { worldwide: false, countries: [], regions: ["APAC"], raw: null } });
-    const { kept } = applyHardFilters([job], criteria({ country: "VN" })); // VN is APAC
-    expect(kept).toHaveLength(1);
-  });
-
-  it("excludes job when user country not in countries or regions", () => {
-    const job = makeJob({ location: { worldwide: false, countries: ["US", "CA"], regions: [], raw: null } });
-    const { excluded } = applyHardFilters([job], criteria({ country: "VN" }));
-    expect(excluded).toHaveLength(1);
-    expect(excluded[0].reason).toMatch(/Location/);
-  });
-
-  it("keeps unparseable Remotive location (uncertain)", () => {
-    // No countries, no regions, not worldwide — location uncertain → keep
+describe("text helpers (SPEC §7)", () => {
+  it("haystack joins title, tags, categories and description in lower case", () => {
     const job = makeJob({
-      source: "remotive",
-      location: { worldwide: false, countries: [], regions: [], raw: "some timezone region" },
+      title: "Senior React Dev",
+      tags: ["GraphQL", "AWS"],
+      categories: ["Software Development"],
+      descriptionText: "We use Node.js",
     });
-    const { kept } = applyHardFilters([job], criteria({ country: "VN" }));
-    expect(kept).toHaveLength(1);
+    expect(haystack(job)).toBe("senior react dev graphql aws software development we use node.js");
+  });
+
+  it("matches whole words only, case-insensitively", () => {
+    expect(matchesTerm("we use react and node.js", "React")).toBe(true);
+    expect(matchesTerm("we use react and node.js", "node")).toBe(true);
+    expect(matchesTerm("we use reactive streams", "react")).toBe(false);
+    expect(matchesTerm("javascript only", "java")).toBe(false);
+  });
+
+  it("matches multi-word terms as a phrase, across any whitespace", () => {
+    expect(matchesTerm("a frontend\n  engineer role", "frontend engineer")).toBe(true);
+    expect(matchesTerm("frontend and backend engineer", "frontend engineer")).toBe(false);
+  });
+
+  it("escapes regex characters and handles symbol-edged terms", () => {
+    expect(matchesTerm("we write c++ and c#", "c++")).toBe(true);
+    expect(matchesTerm("we write c and go", "c++")).toBe(false);
+    expect(matchesTerm("price is a.b", "a.b")).toBe(true);
+    expect(matchesTerm("price is axb", "a.b")).toBe(false);
+    expect(matchesTerm("anything", "   ")).toBe(false);
+  });
+
+  it("matchedTerms keeps input order and only the hits", () => {
+    expect(matchedTerms("react typescript node", ["graphql", "node", "react"])).toEqual(["node", "react"]);
   });
 });
 
-// ── F2 — Excluded keywords ────────────────────────────────────────────────
-
-describe("applyHardFilters — F2 excluded keywords", () => {
-  it("skips F2 when excludedKeywords is empty", () => {
-    const job = makeJob({ descriptionText: "php laravel backend" });
-    const { kept } = applyHardFilters([job], criteria({ excludedKeywords: [] }));
-    expect(kept).toHaveLength(1);
+describe("country to region mapping (F1)", () => {
+  it("covers every country the location parser can produce, with known region codes", () => {
+    const regionCodes = new Set(Object.values(REGION_LOOKUP));
+    for (const alpha2 of new Set(Object.values(COUNTRY_LOOKUP))) {
+      expect(COUNTRY_REGION[alpha2], alpha2).toBeDefined();
+    }
+    for (const region of Object.values(COUNTRY_REGION)) {
+      expect(regionCodes.has(region)).toBe(true);
+    }
   });
 
-  it("excludes job when excluded keyword found in descriptionText", () => {
-    const job = makeJob({ descriptionText: "php laravel backend" });
-    const { excluded } = applyHardFilters([job], criteria({ excludedKeywords: ["php"] }));
-    expect(excluded).toHaveLength(1);
-    expect(excluded[0].reason).toContain("php");
-  });
-
-  it("excludes job when excluded keyword found in title", () => {
-    const job = makeJob({ title: "PHP Backend Developer" });
-    const { excluded } = applyHardFilters([job], criteria({ excludedKeywords: ["php"] }));
-    expect(excluded).toHaveLength(1);
-  });
-
-  it("does not exclude on partial word match (word boundary)", () => {
-    const job = makeJob({ descriptionText: "graphql typescript" });
-    // 'php' is not at a word boundary inside 'graphql'
-    const { kept } = applyHardFilters([job], criteria({ excludedKeywords: ["php"] }));
-    expect(kept).toHaveLength(1);
+  it("resolves case-insensitively and returns null for unknown countries", () => {
+    expect(regionOfCountry("vn")).toBe("APAC");
+    expect(regionOfCountry("DE")).toBe("EUROPE");
+    expect(regionOfCountry("ZZ")).toBeNull();
   });
 });
 
-// ── F3 — Salary floor ─────────────────────────────────────────────────────
-
-describe("applyHardFilters — F3 salary", () => {
-  it("skips F3 when minSalary is null", () => {
-    const job = makeJob({ salary: { min: 50_000, max: 60_000, currency: "USD", period: "annual", annualMin: 50_000, annualMax: 60_000, raw: null } });
-    const { kept } = applyHardFilters([job], criteria({ minSalary: null }));
-    expect(kept).toHaveLength(1);
-  });
-
-  it("skips F3 when job salary is unknown", () => {
-    const job = makeJob({ salary: null });
-    const { kept } = applyHardFilters([job], criteria({ minSalary: { amount: 100_000, currency: "USD" } }));
-    expect(kept).toHaveLength(1);
-  });
-
-  it("skips F3 when currency differs", () => {
-    const job = makeJob({ salary: { min: 50_000, max: 60_000, currency: "EUR", period: "annual", annualMin: 50_000, annualMax: 60_000, raw: null } });
-    const { kept } = applyHardFilters([job], criteria({ minSalary: { amount: 100_000, currency: "USD" } }));
-    expect(kept).toHaveLength(1);
-  });
-
-  it("excludes job when annualMax < minSalary.amount (same currency)", () => {
-    const job = makeJob({ salary: { min: 50_000, max: 80_000, currency: "USD", period: "annual", annualMin: 50_000, annualMax: 80_000, raw: null } });
-    const { excluded } = applyHardFilters([job], criteria({ minSalary: { amount: 100_000, currency: "USD" } }));
-    expect(excluded).toHaveLength(1);
-    expect(excluded[0].reason).toMatch(/Salary/);
-  });
-
-  it("keeps job when annualMax >= minSalary.amount", () => {
-    const job = makeJob({
-      salary: { min: 90_000, max: 120_000, currency: "USD", period: "annual", annualMin: 90_000, annualMax: 120_000, raw: null },
+describe("applyHardFilters (SPEC §7.1, FR6)", () => {
+  it("keeps eligible jobs through F1 to F3 (happy path)", () => {
+    const jobs = [
+      makeJob({ id: "a", location: restricted([], []), salary: usd(120000, 150000) }),
+      makeJob({ id: "b", location: { worldwide: true, countries: [], regions: [], raw: null } }),
+      makeJob({ id: "c", location: restricted(["VN", "TH"]) }),
+      makeJob({ id: "d", location: restricted([], ["APAC"]) }),
+    ];
+    // "a" has an unparseable location; it is kept (see the dedicated test).
+    const criteria = makeCriteria({
+      country: "VN",
+      excludedKeywords: ["php"],
+      minSalary: { amount: 100000, currency: "USD" },
     });
-    const { kept } = applyHardFilters([job], criteria({ minSalary: { amount: 100_000, currency: "USD" } }));
-    expect(kept).toHaveLength(1);
+    const { kept, excluded } = applyHardFilters(jobs, criteria);
+    expect(kept.map((j) => j.id)).toEqual(["a", "b", "c", "d"]);
+    expect(excluded).toEqual([]);
+  });
+
+  it("keeps every job with default criteria (all filters skipped)", () => {
+    const jobs = [makeJob({ id: "x", location: restricted(["US"]), descriptionText: "php" })];
+    expect(applyHardFilters(jobs, DEFAULT_CRITERIA).kept).toHaveLength(1);
+  });
+
+  it("F1 excludes jobs restricted to other countries and regions, with a reason", () => {
+    const job = makeJob({ id: "us-only", location: restricted(["US", "CA"], ["EUROPE"]) });
+    const { kept, excluded } = applyHardFilters([job], makeCriteria({ country: "vn" }));
+    expect(kept).toEqual([]);
+    expect(excluded).toEqual([
+      { job, reason: "Location: not open to applicants in VN (open to US, CA, EUROPE)" },
+    ]);
+  });
+
+  it("F1 keeps a job listed for the user's region through the country mapping", () => {
+    const job = makeJob({ location: parseRemotiveLocation("Europe") });
+    expect(evaluateLocation(job, "DE")).toBe("eligible");
+    expect(evaluateLocation(job, "US")).toBe("ineligible");
+  });
+
+  it("F1 keeps an unparseable Remotive location and flags it as uncertain", () => {
+    const job = makeJob({ source: "remotive", location: parseRemotiveLocation("USA timezones") });
+    const criteria = makeCriteria({ country: "VN" });
+    expect(applyHardFilters([job], criteria).kept).toEqual([job]);
+    expect(evaluateLocation(job, "VN")).toBe("uncertain");
+    expect(isLocationUncertain(job, criteria)).toBe(true);
+    // With no country set, F1 does not apply, so nothing is uncertain.
+    expect(isLocationUncertain(job, DEFAULT_CRITERIA)).toBe(false);
+  });
+
+  it("F2 excludes a job whose haystack contains an excluded term, by word", () => {
+    const phpJob = makeJob({ id: "php", tags: ["PHP"] });
+    const onsite = makeJob({ id: "onsite", descriptionText: "This role is On-Site in Berlin." });
+    const graphJob = makeJob({ id: "graph", descriptionText: "We use graphql" });
+    const { kept, excluded } = applyHardFilters(
+      [phpJob, onsite, graphJob],
+      makeCriteria({ excludedKeywords: ["php", "on-site", "graph"] }),
+    );
+    expect(kept.map((j) => j.id)).toEqual(["graph"]);
+    expect(excluded.map((e) => e.reason)).toEqual([
+      'Excluded keyword: "php"',
+      'Excluded keyword: "on-site"',
+    ]);
+  });
+
+  it("F3 excludes a known same-currency salary whose annualMax is below the floor", () => {
+    const low = makeJob({ id: "low", salary: usd(60000, 80000) });
+    const edge = makeJob({ id: "edge", salary: usd(90000, 100000) });
+    const { kept, excluded } = applyHardFilters(
+      [low, edge],
+      makeCriteria({ minSalary: { amount: 100000, currency: "usd" } }),
+    );
+    expect(kept.map((j) => j.id)).toEqual(["edge"]);
+    expect(excluded).toEqual([
+      { job: low, reason: "Salary below minimum: up to 80,000 USD a year, minimum 100,000 USD" },
+    ]);
+  });
+
+  it("F3 does not exclude an unknown salary", () => {
+    const jobs = [
+      makeJob({ id: "none", salary: null }),
+      makeJob({ id: "no-max", salary: usd(50000, null) }),
+      makeJob({ id: "no-currency", salary: usd(50000, 60000, null) }),
+    ];
+    const criteria = makeCriteria({ minSalary: { amount: 100000, currency: "USD" } });
+    expect(applyHardFilters(jobs, criteria).kept.map((j) => j.id)).toEqual(["none", "no-max", "no-currency"]);
+  });
+
+  it("F3 does not exclude a salary in another currency", () => {
+    const job = makeJob({ salary: usd(40000, 50000, "EUR") });
+    const criteria = makeCriteria({ minSalary: { amount: 100000, currency: "USD" } });
+    expect(applyHardFilters([job], criteria).kept).toEqual([job]);
+  });
+
+  it("reports only the first failing filter, in F1, F2, F3 order", () => {
+    const job = makeJob({ location: restricted(["US"]), tags: ["php"], salary: usd(10000, 20000) });
+    const criteria = makeCriteria({
+      country: "VN",
+      excludedKeywords: ["php"],
+      minSalary: { amount: 100000, currency: "USD" },
+    });
+    const { excluded } = applyHardFilters([job], criteria);
+    expect(excluded).toHaveLength(1);
+    expect(excluded[0].reason).toMatch(/^Location:/);
   });
 });

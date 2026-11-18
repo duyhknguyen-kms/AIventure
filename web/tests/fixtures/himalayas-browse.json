@@ -1,25 +1,384 @@
 {
-  "updatedAt": 1794893246,
-  "nextCursor": "MjAyNi0xMS0xN1QwNDoyMjozMS40MzgwNjVafDI1NTQ2NTU",
+  "comments": "21/08/2026: Cursor pagination is now available and is the preferred way to page through the feed. Pass the nextCursor value from each response back as ?cursor=. It is faster than offset and will never return the same job twice. The offset parameter is deprecated and will be removed in a future release. 13/03/2026: The API has been updated to include the companySlug field in the response.",
+  "updatedAt": 1794901561,
   "offset": 0,
   "limit": 20,
-  "totalCount": 119117,
+  "totalCount": 118611,
+  "nextCursor": "MjAyNi0xMS0xN1QwNjoyODozMC40MzIyOThafDI1NTQ1ODY",
   "jobs": [
     {
-      "title": "Senior SEO & AEO Manager",
-      "excerpt": "What the Role IsBabylist is seeking a leader for SEO, AEO, and GEO to guide how expecting and new parents discover us across traditional search and AI-powered platforms like ChatGPT, Google AI Overviews, and Claude.",
-      "companyName": "BabyList",
-      "companySlug": "babyli",
-      "companyLogo": "https://cdn-images.himalayas.app/f09uqb4j0je4zh3tw51li1mr63e1",
+      "title": "Senior GPU Infrastructure Engineer, Deployment",
+      "excerpt": "About PolarGridPolarGrid is an early-stage Canadian company that runs managed AI inference.",
+      "companyName": "Polargrid",
+      "companySlug": "polargrid",
+      "companyLogo": "https://cdn-images.himalayas.app/dl80cxjfja964ziyc26gbbpenlod",
       "employmentType": "Full Time",
-      "minSalary": 143788,
-      "maxSalary": 191730,
+      "minSalary": 175000,
+      "maxSalary": 215000,
       "salaryPeriod": "annual",
       "seniority": [
-        "Senior",
-        "Manager"
+        "Senior"
+      ],
+      "currency": "CAD",
+      "locationRestrictions": [
+        "Canada"
+      ],
+      "timezoneRestrictions": [
+        -7,
+        -6,
+        -5,
+        -4,
+        -3.5
+      ],
+      "categories": [
+        "GPU-Infrastructure-Engineer",
+        "Infrastructure-Engineer",
+        "Systems-Engineer",
+        "Site-Reliability-Engineer",
+        "DevOps-Engineer"
+      ],
+      "parentCategories": [
+        "Developer",
+        "Operations"
+      ],
+      "description": "<h3>About PolarGrid</h3><p>PolarGrid is an early-stage Canadian company that runs managed AI inference. Customers bring their own models, and we run them as fast, reliable production endpoints on GPU servers across many sites. We are a small team of about five engineers.</p><h3>The role</h3><p>You will own how new GPU servers become ready for customers: from racks at a datacenter to tested, production-ready nodes. You will define when a node is ready, build the automation that gets it there, and keep the fleet healthy once it is running.</p><p>This is a hands-on senior role on a small team. You will work with datacenter partners and their on-site staff, and closely with the engineers who own routing and the network.</p><h3>The work</h3><p>We bring up large GPU servers at datacenters we don't own. Each node has to be provisioned, tested hard and proven healthy before customers use it. Between customers it has to be wiped clean. Once in service, failing hardware has to be caught early and taken out of rotation. The hard part is doing this the same way, every time, across many sites, with a small team.</p><h3>What you bring</h3><ul>\n<li><p>You have brought up multi-GPU servers or clusters for production workloads, including acceptance testing and burn-in.</p></li>\n<li><p>Experience with high-speed GPU networking such as InfiniBand or RoCE.</p></li>\n<li><p>You have automated bare-metal provisioning and kept firmware and images consistent across a fleet.</p></li>\n<li><p>You can diagnose GPU and server hardware faults and decide when to repair or replace.</p></li>\n<li><p>You have run GPUs inside virtual machines or otherwise isolated customers on shared hardware.</p></li>\n<li><p>You have worked with remote datacenter staff and been on call for a fleet.</p></li>\n<li><p>You write scripts and tools in a language such as Python, Go or Bash.</p></li>\n<li><p>You use AI tools well and check their work.</p></li>\n</ul><p>You do not need ML model experience. What matters is that you have put real GPU hardware into service for other people's workloads and kept it running.</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794901561,
+      "expiryDate": 1800085560,
+      "applicationLink": "https://himalayas.app/companies/polargrid/jobs/senior-gpu-infrastructure-engineer-deployment?utm_source=api",
+      "guid": "https://himalayas.app/companies/polargrid/jobs/senior-gpu-infrastructure-engineer-deployment"
+    },
+    {
+      "title": "Channel Partner",
+      "excerpt": "OverviewThe Channel Partner - Hospital Association Sales is responsible for strengthening current state hospital association partnerships, developing new ones, and creating business opportunities for Medical Solutions.",
+      "companyName": "Medical Solutions",
+      "companySlug": "medical-solutions",
+      "companyLogo": "https://cdn-images.himalayas.app/bsw269gsuk3wpzlhgq4yelhhubv5",
+      "employmentType": "Other",
+      "minSalary": 115000,
+      "maxSalary": 145000,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Mid-level"
       ],
       "currency": "USD",
+      "locationRestrictions": [
+        "United States"
+      ],
+      "timezoneRestrictions": [
+        -10,
+        -9,
+        -8,
+        -7,
+        -6,
+        -5,
+        14
+      ],
+      "categories": [
+        "Channel-Partner",
+        "Partnerships-Manager",
+        "Business-Development-Manager",
+        "Account-Manager",
+        "Customer-Success-Manager"
+      ],
+      "parentCategories": [
+        "Marketing",
+        "Sales",
+        "Customer Service"
+      ],
+      "description": "<h3>Overview</h3><p>The Channel Partner - Hospital Association Sales is responsible for strengthening current state hospital association partnerships, developing new ones, and creating business opportunities for <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a>.</p><p>The role builds relationships with association leaders and member hospitals, identifies workforce needs, and connects opportunities with the appropriate sales team. The Channel Partner stays involved when the association relationship can help open doors, build trust, or move an opportunity forward.</p><p>Success is measured by partnership growth, member engagement, sales opportunities created, and business generated through these relationships.</p><h3>Responsibilities</h3><h3>Association Relationship Management</h3><ul>\n<li>Serve as the main point of contact for assigned state hospital association partnerships.</li>\n<li>Build strong relationships with association leaders and other key contacts.</li>\n<li>Develop a plan for each partnership that outlines goals, opportunities, events, member engagement, and expected results.</li>\n<li>Identify ways to increase <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a>' visibility and value within each association.</li>\n<li>Review partnership performance and develop plans to improve relationships that are not producing expected results.</li>\n</ul><h3>New Partnership Development</h3><ul>\n<li>Identify state hospital associations and other healthcare organizations that could be strong partners for <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a>.</li>\n<li>Build relationships with association leaders and decisionmakers.</li>\n<li>Evaluate potential partnerships based on member reach, market opportunity, cost, and potential business value.</li>\n<li>Lead partnership discussions and work with internal teams to put new agreements in place.</li>\n<li>Help launch new partnerships and build relationships with their members.</li>\n</ul><h3>Member Engagement and Sales Opportunities</h3><ul>\n<li>Build relationships with member hospitals and health systems.</li>\n<li>Learn about member workforce needs and identify where <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a> may be able to help.</li>\n<li>Use association relationships to create introductions and open doors with member organizations.</li>\n<li>Connect qualified opportunities with the appropriate <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a> sales team.</li>\n<li>Work with Sales to identify priority association members and opportunities.</li>\n<li>Stay involved when association relationship can help move an opportunity forward or strengthen the client relationship.</li>\n</ul><h3>Partnership Growth and Results</h3><ul>\n<li>Set clear goals for each association partnership.</li>\n<li>Track member engagement, introductions, sales opportunities, pipeline, revenue, and other agreed-upon measures.</li>\n<li>Review results regularly to understand which partnerships are producing value, and which need a different approach.</li>\n<li>Identify ways to increase participation and business from existing partnerships.</li>\n<li>Report on partnership activity, opportunities created, business generated, and return on investment.</li>\n<li>Recommend where <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a> should invest more, make changes, or reconsider a partnership based on results.</li>\n</ul><h3>Events and Market Presence</h3><ul>\n<li>Represent <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a> at association conferences, meetings, networking events, and member activities.</li>\n<li>Use events to build relationships, make connections, and create business opportunities.</li>\n<li>Work with Sales and Marketing before key events to identify priority organizations and contacts.</li>\n<li>Ensure opportunities and follow up from events are connected to the appropriate team.</li>\n<li>Travel approximately 50% based on business needs.</li>\n</ul><h3>Internal Partnership</h3><ul>\n<li>Work closely with Sales, Client, Marketing, Operations, Legal, Finance, and other teams to support association partnerships.</li>\n<li>Bring the right <a href=\"https://himalayas.app/companies/medical-solutions\">Medical Solutions</a> leaders and subject matter experts into association and member conversations when needed.</li>\n<li>Share association member needs, opportunities, and market information with Sales and other teams.</li>\n<li>Help ensure commitments made to association partners are understood and delivered.</li>\n</ul><h3>Qualifications</h3><ul>\n<li>Bachelor's degree or equivalent relevant experience.</li>\n<li>Experience in healthcare staffing, hospital associations, business development, sales, account management, or strategic partnerships preferred.</li>\n<li>Strong relationship-building skills with the ability to work with senior leaders and decision-makers.</li>\n<li>Experience building business relationships and turning those into sales opportunities. </li>\n<li>Strong presentation, communication, organization, and follow-up skills.</li>\n<li>Ability to work independently, use CRM and reporting tools to track results and travel approximately 50% of time.</li>\n</ul><h3>Pay Range</h3>USD $115,000.00 - USD $145,000.00 /Yr.<p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794901558,
+      "expiryDate": 1800085558,
+      "applicationLink": "https://himalayas.app/companies/medical-solutions/jobs/channel-partner?utm_source=api",
+      "guid": "https://himalayas.app/companies/medical-solutions/jobs/channel-partner"
+    },
+    {
+      "title": "Senior Network Engineer, Edge",
+      "excerpt": "About PolarGridPolarGrid is an early-stage Canadian company that runs managed AI inference.",
+      "companyName": "Polargrid",
+      "companySlug": "polargrid",
+      "companyLogo": "https://cdn-images.himalayas.app/dl80cxjfja964ziyc26gbbpenlod",
+      "employmentType": "Full Time",
+      "minSalary": 170000,
+      "maxSalary": 205000,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Senior"
+      ],
+      "currency": "CAD",
+      "locationRestrictions": [
+        "Canada"
+      ],
+      "timezoneRestrictions": [
+        -7,
+        -6,
+        -5,
+        -4,
+        -3.5
+      ],
+      "categories": [
+        "Senior-Network-Engineer",
+        "Network-Engineer",
+        "Network-Infrastructure-Engineer",
+        "Cloud-Network-Engineer",
+        "Site-Reliability-Engineer"
+      ],
+      "parentCategories": [
+        "Hardware Engineer",
+        "Developer"
+      ],
+      "description": "<h3>About PolarGrid</h3><p>PolarGrid is an early-stage Canadian company that runs managed AI inference. Customers bring their own models, and we run them as fast, reliable production endpoints on GPU servers across many sites. We are a small team of about five engineers.</p><h3>The role</h3><p>You will own the network that customer traffic enters through and the links that connect our sites. You will design it, build it and run it in production.</p><p>This is a hands-on senior role on a small team. You will work closely with the engineer who owns request routing, and with the people bringing new GPU sites online.</p><h3>The work</h3><p>Customers reach us through a set of points of presence on the public internet. Behind them, our GPU sites stay private and connect out to us. You will run that edge: the addresses customers connect to, the protection that keeps attacks away from our servers, and the private links back to each site. The hard part is doing this with a small team, so it has to be automated, observable and calm under attack.</p><h3>What you bring</h3><ul>\n<li><p>You have designed and run production networks across multiple locations.</p></li>\n<li><p>Strong fundamentals in BGP, DNS, TCP and TLS, and load balancing.</p></li>\n<li><p>You have handled DDoS attacks or built the protection against them.</p></li>\n<li><p>You manage network configuration as code, not by hand.</p></li>\n<li><p>You have been on call for a network and led incident response.</p></li>\n<li><p>You can write tools and automation in a language such as Go, Rust or Python.</p></li>\n<li><h3>You write clearly.</h3></li>\n<li><p>You use AI tools well and check their work.</p></li>\n</ul><p>You do not need GPU or ML experience. What matters is that you have run networks people depend on and want to build one from the start.</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794901245,
+      "expiryDate": 1800085245,
+      "applicationLink": "https://himalayas.app/companies/polargrid/jobs/senior-network-engineer-edge?utm_source=api",
+      "guid": "https://himalayas.app/companies/polargrid/jobs/senior-network-engineer-edge"
+    },
+    {
+      "title": "Senior II Software Engineer",
+      "excerpt": "Are you passionate about building high-throughput, low-latency REST APIs that power critical platform infrastructure?",
+      "companyName": "Akamai Technologies",
+      "companySlug": "akamai-technologies",
+      "companyLogo": "https://cdn-images.himalayas.app/lb8259c8ijm7nvddhbhfm13hy13d",
+      "employmentType": "Full Time",
+      "minSalary": 120400,
+      "maxSalary": 216600,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Senior"
+      ],
+      "currency": "CAD",
+      "locationRestrictions": [
+        "Canada"
+      ],
+      "timezoneRestrictions": [
+        -7,
+        -6,
+        -5,
+        -4,
+        -3.5
+      ],
+      "categories": [
+        "Software-Engineer",
+        "Backend-Engineer",
+        "Platform-Engineer",
+        "API-Engineer"
+      ],
+      "parentCategories": [
+        "Developer"
+      ],
+      "description": "<p><strong>Are you passionate about building high-throughput, low-latency REST APIs that power critical platform infrastructure?</strong></p><p><strong>Do you thrive on leading architectural decisions and mentoring engineers to elevate technical standards?</strong></p><h3>Join our world-class enterprise security team</h3><p>Akamai empowers developers and organizations globally by providing resilient, high-performing backend infrastructure. Our API Team builds scalable platform services that enable internal partner teams to deploy robust applications seamlessly.</p><h3>Develop and contribute to full product life-cycle</h3><p>In this role, you will lead the architecture, design, and implementation of high-performance backend systems. You will collaborate across engineering teams to establish API standards, improve system performance, and drive fault-tolerant system design.</p><p>Your responsibilities as a Senior II Software Engineer will include the following:</p><ul>\n<li class=\"lst\">Architecting, building, and evolving scalable, low-latency REST APIs and service layers using Python and Flask</li>\n<li class=\"lst\">Designing robust schemas and optimizing database queries using SQLAlchemy to maintain high system availability</li>\n<li class=\"lst\">Leading technical teams, design reviews, establishing engineering best practices, and mentoring junior and mid-level engineers</li>\n<li class=\"lst\">Implementing robust authentication, rate limiting, and observability across distributed backend services</li>\n<li class=\"lst\">Designing fault-tolerant backend services that fail gracefully under load using circuit breakers and defensive validation</li>\n<li class=\"lst\">Collaborating with cross-functional teams to define clear API contracts, architecture patterns, and integration workflows</li>\n</ul><h3>Do what you love</h3><h3>To be successful in this role you will:</h3><ul>\n<li class=\"lst\">Have 10+ years of relevant experience and a Bachelor's degree or equivalent experience</li>\n<li class=\"lst\">Be able to lead a technical team of developers</li>\n<li class=\"lst\">Have experience with core backend development using Python, Flask, SQLAlchemy, and relational databases</li>\n<li class=\"lst\">Demonstrate deep expertise in RESTful architecture, HTTP protocols, API versioning, and security best practices</li>\n<li class=\"lst\">Possess solid proficiency in Git workflows, CI/CD pipelines, cloud platforms, and containerization technologies</li>\n<li class=\"lst\">Have understanding of distributed systems, event-driven architectures, automated testing, and observability tooling</li>\n<li class=\"lst\">Be knowledgeable in AI tooling, agentic workflows, transformer architectures, and background processing systems</li>\n</ul><h3>About us</h3><p>At Akamai, we make life better for billions of people, trillions of times a day.<br>Whether you're streaming live events, scrolling social media, watching your favorite series, or managing your savings, we're the engine behind the scenes. We provide the world's most distributed platform from Cloud to Edge to help the giants of the digital world work faster and stay more secure, making the internet a better experience for everyone.</p><h3>Our focus is simple:</h3><p><strong>Cloud and Edge:</strong> Running apps closer to users for instant performance.<br><strong>Security</strong>: Neutralizing threats before they ever reach your data.<br><strong>Content Delivery</strong>: Scaling the world's biggest moments without a glitch.<br><strong>AI</strong>: Enabling our customers to build, secure, and scale AI apps on the world's most distributed cloud platform.<br><br>At Akamai, we don't just support the internet; we power and protect it, because behind every great digital experience is a massive hidden challenge. And we're the ones who solve it. When millions of people hit play or pay, Akamai ensures it just works.</p><p><strong>Benefits at Akamai:</strong> We support your health, well-being, finances, and life beyond work. See our benefits.</p><h3>FlexBase adapts to your job's needs</h3><p>Akamai's FlexBase program is yet another way we show our commitment to providing employees with an exceptional workplace experience. It's not about telling employees where to work; it's about supporting employees to do their best work.<br><br>We trust our incredible employees to work in ways that suit them best: at home, in an office, or a combination of both.</p>Connect with us on social and see what life at Akamai is like!<h3>Compensation</h3><p>Akamai is committed to fair and equitable compensation practices. For US based candidates only - the base salary for this position ranges from CA$120,400 - CA$216,600/year; a candidate’s salary is determined by various factors including, but not limited to, relevant work experience, skills, certifications and location. Compensation for candidates outside the US will vary. The compensation package may also include incentive compensation opportunities in the form of annual bonus or incentives, equity awards and an Employee Stock Purchase Plan (ESPP). Akamai provides industry-leading benefits including healthcare, 401K savings plan, company holidays, vacation (in the form of PTO), sick time, family friendly benefits including parental leave and an employee assistance program including a focus on mental and financial wellness; Eligibility requirements apply.</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794901056,
+      "expiryDate": 1800085056,
+      "applicationLink": "https://himalayas.app/companies/akamai-technologies/jobs/senior-ii-software-engineer-8486394144?utm_source=api",
+      "guid": "https://himalayas.app/companies/akamai-technologies/jobs/senior-ii-software-engineer-8486394144"
+    },
+    {
+      "title": "Customer Service Specialist - UK Banking Client",
+      "excerpt": "OverviewJoin Our Team as a Customer Service Specialist – Banking & Financial Services - Work from Home Teleperformance certified as great place to work UK in 2025!.",
+      "companyName": "Teleperformance",
+      "companySlug": "teleperformanceusa",
+      "companyLogo": "https://cdn-images.himalayas.app/bg9vpo5plo764hjnu7xfu3g0dhgh",
+      "employmentType": "Full Time",
+      "minSalary": 27580.8,
+      "maxSalary": 27580.8,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Entry-level"
+      ],
+      "currency": "GBP",
+      "locationRestrictions": [
+        "United Kingdom"
+      ],
+      "timezoneRestrictions": [
+        0
+      ],
+      "categories": [
+        "Customer-Service",
+        "Complaints-Handler",
+        "Banking-Specialist"
+      ],
+      "parentCategories": [
+        "Customer Service"
+      ],
+      "description": "<h3>Overview</h3><p><strong>Join Our Team as a Customer Service Specialist – Banking &amp; Financial Services - Work from Home</strong></p><p><a href=\"https://himalayas.app/companies/teleperformanceusa\">Teleperformance</a> certified as great place to work UK in 2025!<strong>. </strong>At <a href=\"https://himalayas.app/companies/teleperformanceusa\">Teleperformance</a>, we deliver an outstanding customer experience, at every single opportunity, as a result of our commitment, passion and dedication to excellence.</p><p>We’re expanding our Banking and Financial Services team and are looking for skilled Complaints Handlers to join us. If you have at least one year’s customer facing experience in the banking or financial services industry, we’d love to hear from you.</p><h3><strong>The Details You’ll Want to Know</strong></h3><h3>Start Date:<strong>18th Jan 2027</strong>\n</h3><p><strong><strong>Salary:</strong><strong>£27,580.80 per annum, £13.26ph</strong>Competitive pay with opportunities to grow and develop your career.</strong></p><h3>\n<strong>Location:</strong><strong>Work from Home</strong>\n</h3><p><strong><strong>Hours:</strong><strong>Full-Time – 40 hours per week</strong></strong></p><ul><li><p><strong>Shifts between <strong>8:00 am and 8:00 pm, </strong>Monday to Sunday</strong></p></li></ul><h3><strong>Training:</strong></h3><ul><li><p><strong><strong>3 weeks of comprehensive training</strong>, followed by <strong>5 weeks of supported working</strong></strong></p></li></ul><h3>\n<strong>Contract Type:</strong><strong>Permanent</strong>\n</h3><p><strong><strong>Background Checks:</strong>To keep our customers and colleagues safe, you’ll need to pass the following checks:</strong></p><ul><li><ul>\n<li><h3><strong>Right to Work in the UK</strong></h3></li>\n<li><h3><strong>Criminal Record Check</strong></h3></li>\n<li><h3><strong>Credit Check</strong></h3></li>\n<li><strong>Sanction</strong></li>\n<li><strong>CIFAS</strong></li>\n<li><p><strong>Any other relevant pre-employment screening</strong></p></li>\n</ul></li></ul><p><strong>Please note: No holidays or time off can be taken during your first 8 weeks of employment</strong></p><p><strong><strong>*Please be advised that you will have to complete a face to face interview via teams*</strong></strong></p><p><strong><strong>Join Our Complaints Team – Where Empathy Meets Excellence </strong></strong></p><p><strong>We believe that even when things go wrong, we have the power to make them right—and better than ever. Our Complaints team sits at the heart of that mission, turning customer frustration into loyalty through empathy, insight, and action.</strong></p><h3><strong>What You’ll Be Doing</strong></h3><ul>\n<li><strong> Deliver exceptional customer experiences by handling complaints with empathy, clarity, and care—whether it’s over the phone or in writing</strong></li>\n<li><strong> Dive deep into issues to uncover root causes, and collaborate across teams to prevent future problems before they arise</strong></li>\n<li><strong> Champion a customer-first culture, helping shape a service experience that’s as thoughtful as it is effective</strong></li>\n<li><strong> Investigate each complaint thoroughly to ensure every customer receives a fair and transparent resolution</strong></li>\n<li><strong> Be the final voice of support—resolving issues with confidence and compassion when customers need us most</strong></li>\n<li><strong> Work through complex problems and escalate when needed, always keeping our commitment to timely and accurate outcomes</strong></li>\n</ul><h3><strong>You Should Apply If…</strong></h3><ul>\n<li><strong>You’re a seasoned complaint handler with experience in regulated environments or you’ve spent a year or more in the banking or financial services world and are ready to take your skills to the next level.</strong></li>\n<li><strong>You’ve written final responses and know how to communicate clearly, fairly, and with impact</strong></li>\n<li><strong>You’re confident and resilient when speaking to customers—whether it’s a tough call or a thoughtful email</strong></li>\n<li><strong>You thrive in fast-paced environments and embrace change with a positive mindset</strong></li>\n<li><strong>You’re comfortable working to targets and deadlines without compromising on quality</strong></li>\n<li><strong>You’ve got a sharp eye for detail and a strong sense of fairness</strong></li>\n<li><strong>You’re great at simplifying complex issues and explaining them in a way that’s engaging and easy to understand</strong></li>\n<li><strong>You quickly grasp key regulations and understand how they shape our decisions</strong></li>\n<li><strong>You’re deeply empathetic, always put yourself in the customer’s shoes, and take full ownership of their journey</strong></li>\n</ul><h3><strong>Values we look for you to have: </strong></h3><ul>\n<li><strong><strong>Process Excellence-</strong> Doing things well means something to you and you will always strive to improve on your work. </strong></li>\n<li><strong><strong>Collaboration</strong><strong>- </strong>You enjoy working with others and you like working as a team player. </strong></li>\n<li><strong><strong>Communication- </strong>You can speak and write clearly and in a confident manner.</strong></li>\n<li><strong><strong>Emotional Intelligence</strong><strong>- </strong>You possess the ability to be emotionally intelligent meaning you are able to empathise, be kind and be good with others.</strong></li>\n<li><strong><strong>Open-Mindedness-</strong> You are able to be open to different ways of thinking and new ideas.</strong></li>\n<li><strong><strong>Critical Thinking- </strong>You are able to think logically when making decisions.</strong></li>\n<li><strong><strong>Solution Orientation- </strong>Having a forward thinking mindset focused on resolving challenges.</strong></li>\n<li><strong><strong>Entrepreneurship- </strong>Taking ownership, not being afraid to take on new tasks, develop and have a self-driven mindset.</strong></li>\n</ul><p><strong><strong>Skills needed to be a Customer Service Representative</strong></strong></p><ul>\n<li><strong>A professional, polite and courteous telephone manner</strong></li>\n<li><strong>Ability to deliver excellent service with outgoing nature </strong></li>\n<li><strong>Excellent verbal communication skills</strong></li>\n<li><strong>A good listener who can convey empathy, patience and understanding </strong></li>\n<li><strong>Confident and proactive to deal with difficult situations and conversations </strong></li>\n<li><strong>High levels of accuracy and attention to detail</strong></li>\n<li><strong>Be driven to work towards achievable targets </strong></li>\n</ul><h3><strong>Financial Sector - Key Responsibilities</strong></h3><ul>\n<li><strong>Provide exceptional and efficient customer service across our telephone, email, webchat and social media channels</strong></li>\n<li><strong>Use your problem-solving skills to support our customers, resolve their query and create a positive experience.</strong></li>\n<li><strong>Ensure that all customers are supported in accordance with regulatory requirements which aim to protect our customers </strong></li>\n<li><strong>Have excellent attention to detail</strong></li>\n<li><strong>Be knowledgeable of our client’s process and products and how best to support the customer</strong></li>\n</ul><p><strong><strong>Benefits of being a Customer Service Representative </strong></strong></p><ul>\n<li><strong>Perks at Work – Savings Discounts / Free Online Classes</strong></li>\n<li><strong>Help@Hand - Savings Discounts / Podcast / Wellbeing Recourses / Webinars / Access to; GP’s, Mental Health Support, Financial Advice, Legal Advice</strong></li>\n<li><strong>Critical Illness – up to £10,000</strong></li>\n<li><strong>Cycle to Work Scheme</strong></li>\n<li><strong>Eyecare support voucher</strong></li>\n<li><strong>Holiday Purchase Scheme</strong></li>\n<li><strong>Length of Service Awards</strong></li>\n<li><strong>Workplace Pension</strong></li>\n<li><strong>Monthly Inspire Awards – For the best of the best</strong></li>\n<li><strong>Refer-A-Friend earns up to £1,200 for you</strong></li>\n<li><strong>Monthly Wellbeing Webinars</strong></li>\n<li><strong>Dedicated Employee Experience Progress – Here to support TP journey </strong></li>\n</ul><p><strong><strong>Disclaimer </strong>Please be vigilant against job scams. <a href=\"https://himalayas.app/companies/teleperformanceusa\">Teleperformance</a> will <strong>never</strong> contact you about anything other than your application through our official channels - UK phone number, text or <a href=\"https://himalayas.app/companies/teleperformanceusa\">Teleperformance</a> or talent.icims email address. . If you receive any suspicious communications claiming to be from <a href=\"https://himalayas.app/companies/teleperformanceusa\">Teleperformance</a>, please disregard them and report the incident to our team. Your security is our priority.</strong></p><p><strong><strong>Disclaimer </strong>Please note, only candidates who meet specific language proficiency scores will be able to proceed on this campaign, this supersedes any other pass mark you may receive. Where you pass the assessment but not the above requirements we will endeavour to find other suitable roles for you however this may not be possible, in this instance we reserve the right to reject your application.</strong></p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794900853,
+      "expiryDate": 1800084852,
+      "applicationLink": "https://himalayas.app/companies/teleperformanceusa/jobs/customer-service-specialist-uk-banking-client?utm_source=api",
+      "guid": "https://himalayas.app/companies/teleperformanceusa/jobs/customer-service-specialist-uk-banking-client"
+    },
+    {
+      "title": "Customer Support Representative",
+      "excerpt": "Peraton OverviewPeraton is a next-generation national security company that drives missions of consequence spanning the globe and extending to the farthest reaches of the galaxy.",
+      "companyName": "Peraton",
+      "companySlug": "peraton",
+      "companyLogo": "https://cdn-images.himalayas.app/59ck8e7cbc0qt8l1bg2dlfvuh78u",
+      "employmentType": "Full Time",
+      "minSalary": 39000,
+      "maxSalary": 62000,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Mid-level"
+      ],
+      "currency": "USD",
+      "locationRestrictions": [
+        "United States"
+      ],
+      "timezoneRestrictions": [
+        -10,
+        -9,
+        -8,
+        -7,
+        -6,
+        -5,
+        14
+      ],
+      "categories": [
+        "Customer-Support-Representative",
+        "Customer-Service",
+        "Technical-Support-Specialist",
+        "Travel-Support-Specialist"
+      ],
+      "parentCategories": [
+        "Customer Service"
+      ],
+      "description": "<h3>\n<a href=\"https://himalayas.app/companies/peraton\">Peraton</a> Overview</h3><p><a href=\"https://himalayas.app/companies/peraton\">Peraton</a> is a next-generation national security company that drives missions of consequence spanning the globe and extending to the farthest reaches of the galaxy. As the world’s leading mission capability integrator and transformative enterprise IT provider, we deliver trusted, highly differentiated solutions and technologies to protect our nation and allies. <a href=\"https://himalayas.app/companies/peraton\">Peraton</a> operates at the critical nexus between traditional and nontraditional threats across all domains: land, sea, space, air, and cyberspace. The company serves as a valued partner to essential government agencies and supports every branch of the U.S. armed forces. Each day, our employees do the can’t be done by solving the most daunting challenges facing our customers. Visit peraton.com to learn how we’re keeping people around the world safe and secure.</p><h3>Responsibilities</h3><p><a href=\"https://himalayas.app/companies/peraton\">Peraton</a> is seeking <strong>Customer Support Representative</strong> to support the Department of Defense’s Defense Travel Management Office (DTMO) Travel Assistance Center (TAC) which supports Department of Department Temporary Duty (TDY) Travel through the Defense Travel System (DTS). The responsibilities of the successful candidates may include, but are not limited to, the following duties:</p><h3>This position is 100% Remote.</h3><h3>Responsibilities: </h3><ul>\n<li>Answers incoming calls/chats from customers to answer inquiries and questions, handle complaints, troubleshoot problems and provide information of a non-technical nature.   Customers may include Defense Travel Administrators, Centrally Billed Account Specialists, Travel Management Companies, Defense Financial Partners, Debt Management Monitors, Compliance Tool Administrators, Transportation Officers and others</li>\n<li>Responds to customer inquiries, provides customers with product and service information and processes orders, forms and applications</li>\n<li>May also make outboard service calls to potential customers. Utilizes mechanized systems to initiate and complete service orders and handle customer requests.</li>\n<li>Researches required information using available resources.</li>\n<li>Identifies and escalates priority issues and complaints.</li>\n<li>Follows up customer calls where necessary. Completes call logs and produces call reports and/or metrics. May be required to work in one or multiple queues/skill sets (e.g., general support, travel reservations, finances).</li>\n<li>May assist in training new employees.</li>\n<li>May support general inquiries or those related to reservations, financial matters, or technical matters.</li>\n</ul><h3>Qualifications</h3><p><strong>Required Qualifications</strong>:</p><ul>\n<li>2-4 years work experience with High School diploma</li>\n<li>High School level reading, writing, and analytical skills</li>\n<li>Excellent communication skills</li>\n<li>Must be a U.S Citizen</li>\n<li>Must have an Active Public Trust with a Tier III Background Investigation</li>\n<li>Experience with problem solving </li>\n<li>Experience with customer solutions</li>\n<li>Experience on the Travel Assistance Center program (3+ years)</li>\n<li>Experience with government travel systems (3+ years)</li>\n<li>Experience with the Defense Travel System (3+ years)</li>\n<li>Experience with RightNow (3+ years)</li>\n<li>Travel industry customer and technical experience (3+ years)</li>\n</ul><h3>Preferred Qualifications</h3><ul>\n<li>Experience on the Travel Assistance Center program (5+ years)</li>\n<li>Experience with government travel systems (5+ years)</li>\n<li>Experience with the Defense Travel System (5+ years)</li>\n<li>Experience with RightNow (5+ years)</li>\n<li>Travel industry customer and technical experience (5+ years)</li>\n<li>Experience with Government financial systems (5+ years)</li>\n<li>Experience with Global Distribution Systems (GDSs) (5+ years)</li>\n</ul><h3>Target Salary Range</h3>$39,000 - $62,000. This represents the typical salary range for this position. Salary is determined by various factors, including but not limited to, the scope and responsibilities of the position, the individual’s experience, education, knowledge, skills, and competencies, as well as geographic location and business and contract considerations. Depending on the position, employees may be eligible for overtime, shift differential, and a discretionary bonus in addition to base pay.<h3>Benefits Statement</h3><p><a href=\"https://himalayas.app/companies/peraton\">Peraton</a> offers eligible employees a variety of benefits including medical, dental, vision, life, health savings account, short/long term disability, EAP, parental leave, 401(k), paid time off (PTO) for vacation, and company paid holidays. A full listing of available benefits can be viewed at </p><h3>Application Statements</h3>The application period for the job is estimated to be 30 days from the job posting date. However, this timeline may be shortened or extended depending on business needs and the availability of qualified candidates. By applying to this job, you are expressing interest in the role and the Company. During the review of your application, you may be required to participate in an on-camera interview, as well as participate in a process to verify your identity. Use of artificial intelligence (AI) tools of any kind during <a href=\"https://himalayas.app/companies/peraton\">Peraton</a> interviews is strictly prohibited unless the candidate has obtained prior written authorization. All interview responses must be the candidate’s own.<h3>EEO</h3>EEO: Equal opportunity employer, including disability and protected veterans, or other characteristics protected by law.<p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794900485,
+      "expiryDate": 1800084484,
+      "applicationLink": "https://himalayas.app/companies/peraton/jobs/customer-support-representative?utm_source=api",
+      "guid": "https://himalayas.app/companies/peraton/jobs/customer-support-representative"
+    },
+    {
+      "title": "WC&D Principal Engineer (Salwick Preston, GB)",
+      "excerpt": "WC&D Principal EngineerWestinghouse Electric CompanySpringfieldWelcome to the future of nuclear energy, where Westinghouse Electric Company is leading the field with expertise and innovation to shape the power of tomorrow.",
+      "companyName": "Westinghouse Electric Company",
+      "companySlug": "westinghouse-electric-company",
+      "companyLogo": "https://cdn-images.himalayas.app/2hhri9iy00on3x6klgflrzpmvalt",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Senior"
+      ],
+      "currency": null,
+      "locationRestrictions": [
+        "United Kingdom"
+      ],
+      "timezoneRestrictions": [
+        0
+      ],
+      "categories": [
+        "Principal-Engineer",
+        "Nuclear-Engineer",
+        "Waste-Management-Engineer",
+        "Characterization-Engineer",
+        "Engineering-Consultant",
+        "Principal-Wastewater-Systems-Engineer"
+      ],
+      "parentCategories": [
+        "Developer"
+      ],
+      "description": "<h3>WC&amp;D Principal Engineer</h3><h3><a href=\"https://himalayas.app/companies/westinghouse-electric-company\">Westinghouse Electric Company</a></h3><h3>Springfield</h3><p><strong>Welcome to the future of nuclear energy</strong>, where <a href=\"https://himalayas.app/companies/westinghouse-electric-company\">Westinghouse Electric Company</a> is leading the field with expertise and innovation to shape the power of tomorrow.</p><p>At Westinghouse, innovation is in our DNA. We are creative. We think differently. We reimagine the possible across the nuclear industry every day.</p><h3>About the role:</h3><p>As a WC&amp;D Principal Engineer you will nngineering services for treatment and final storage of radioactive waste including process system design, unit process design, regulatory/licensing interface support, bid development, and overall facility design integration</p><p>You will report to the Waste Characterization and Disposal Manager and be located at Springfield. Position is remote.</p><h3>Key Responsibilities:</h3><ul>\n<li>Definition of waste acceptance criteria and complementary procedures and technical specifications</li>\n<li>Waste packages activity calculations for Low and Intermediate Level Waste, Very Low Level</li>\n<li>Waste, storage units, large dimensions waste like equipment and components and singular waste</li>\n<li>Calculation and definition of the scaling factors from the sampling activity results and statistical techniques and applications and radionuclide vectors calculation and validation</li>\n<li>Preparation of engineering documents (calculation reports, descriptions, licensing documents, and specifications)</li>\n<li>Carrying out production control of waste generation in the Nuclear Power Plants (Quality Assurance process)</li>\n<li>Participation in preparation of proposals (technical descriptions, calculation of efforts)</li>\n<li>Resolve and provide technical leadership for complex, emergent and industry issues, and interface with our customers and other teams within Westinghouse</li>\n<li>Resolve and provide technical leadership for special projects· Lead engineering design and analyses and propose solutions to complex problems that are not well defined</li>\n<li>Coordinate and integrate complex technical projects that encompass diverse teams; achieve established budget and schedule requirements, manage project risks, and develop mitigation strategies</li>\n<li>Provide technical leadership for general code, procedure, and method development updates</li>\n<li>Mentor mid‑level and senior engineers, helping them grow in technical breadth and depth and coach less‑experienced engineers</li>\n<li>Translate business needs into scalable and maintainable technical solutions.</li>\n<li>Represent the engineering organization in audits, technical reviews, and external collaborations when needed</li>\n</ul><h3>Qualifications:</h3><ul>\n<li>Bachelor's degree in Science (Physics or Chemistry) or engineering</li>\n<li>At least 10 years of relevant experience in projects in the field of characterization engineering and acceptance of nuclear waste</li>\n<li>Good knowledge about nuclear waste management systems</li>\n<li>Fluency in Spanish: must speak and write Spanish perfectly.</li>\n<li>Fluent in English with proven reporting skills</li>\n<li>MS Office products knowledge</li>\n<li>Strong technical interest, predisposition for multi-tasking, flexibility, understanding of project priorities and teamwork abilities</li>\n<li>Working in international teams</li>\n<li>Travelling and onsite activities (worldwide)</li>\n<li>Driving License</li>\n</ul><h3>Why Westinghouse?</h3><p>We know that to put forth your best effort, you need to be challenged and enjoy what you do in a supportive and respectful environment. We aim to maintain this balance by offering our employees the amenities, benefits and training they need to reach personal and professional goals.</p><p><strong>Below is an example of what employees in the UK can expect:</strong></p><ul>\n<li>Attractive remuneration</li>\n<li>Great benefits for your convenience and safety:<ul>\n<li>Peer-to-peer recognition program.</li>\n<li>Life insurance</li>\n<li>Pension plan</li>\n<li>Employee Assistance Program: confidential counseling and resources for employees, eligible dependents, and household members</li>\n</ul>\n</li>\n<li>Learning and development opportunities.</li>\n<li>We encourage our employees to participate in community service events and other team-building activities to strengthen their bonds and inspire each other.</li>\n</ul><p><strong>You can learn more about Westinghouse by visiting</strong>.</p><p>Westinghouse is an Equal Opportunity Employer including Veterans and Individuals with Disabilities.</p><p><strong>Get connected with Westinghouse on social media:</strong><strong>Twitter</strong><strong>|</strong><strong>Facebook</strong><strong>|</strong><strong>LinkedIn</strong><strong>|</strong><strong>YouTube</strong></p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794900431,
+      "expiryDate": 1800084431,
+      "applicationLink": "https://himalayas.app/companies/westinghouse-electric-company/jobs/wc-d-principal-engineer-salwick-preston-gb?utm_source=api",
+      "guid": "https://himalayas.app/companies/westinghouse-electric-company/jobs/wc-d-principal-engineer-salwick-preston-gb"
+    },
+    {
+      "title": "Senior Software Architect",
+      "excerpt": "Company OverviewBy Light Professional IT Services LLC readies warfighters and federal agencies with technology and systems engineered to connect, protect, and prepare individuals and teams for whatever comes next.",
+      "companyName": "Cesicorp",
+      "companySlug": "cesicorp",
+      "companyLogo": "https://cdn-images.himalayas.app/8v6s132wqtz7446j5xt4fe9x0hc0",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Senior"
+      ],
+      "currency": null,
+      "locationRestrictions": [
+        "United States"
+      ],
+      "timezoneRestrictions": [
+        -10,
+        -9,
+        -8,
+        -7,
+        -6,
+        -5,
+        14
+      ],
+      "categories": [
+        "Software-Architect",
+        "System-Architect",
+        "Enterprise-Architect",
+        "Technical-Architect"
+      ],
+      "parentCategories": [
+        "Developer"
+      ],
+      "description": "<h3>Company Overview</h3><p>By Light Professional IT Services LLC readies warfighters and federal agencies with technology and systems engineered to connect, protect, and prepare individuals and teams for whatever comes next. Headquartered in McLean, VA, By Light supports defense, civilian, and commercial IT customers worldwide.</p><p>Cole Engineering Services (CESI), a By Light company, is recognized as a premier provider of modeling and simulation (M&amp;S) training solutions to the Federal Government and industry. Since 2004, CESI has been at the forefront of developing, maintaining, and integrating simulation-based training, serious gaming, technical services, training and other support in live, virtual, constructive, and gaming (LVCG) domains. CESI also designs, builds and runs infrastructure, platforms, applications and processes that enable cyber training for the integrated multi-domain force. Our vision is to become a worldwide full spectrum LVCG and cyber training/analysis developer, integrator and services provider.</p><h3>Position Overview</h3><p>Assist in the design and development of a large-scale distributed simulation system through modification and integration of existing components and greenfield development of new components. Collaboratively define interfaces between this system and military C2 systems and other simulations. Develop and maintain system software architecture. Design detailed interfaces between incrementally developed components. Execute full lifecycle software development to include software requirements analysis, software design, software implementation, software integration and test, and system documentation.</p><h3>Responsibilities</h3><ul>\n<li>Lead system-level design efforts</li>\n<li>Design and implement component interfaces</li>\n<li>Coordinate with developers of interoperating systems on interface requirements</li>\n<li>Ensure system interoperability with current and developing simulation federations</li>\n<li>Document and communicate system design</li>\n<li>Identify and document development work (user stories) executable within the Agile sprint timeframe</li>\n<li>Design, code and debug applications in various software languages using object-oriented design where appropriate</li>\n<li>Understand and adhere to project schedules and stay within established budgets.</li>\n<li>Comply with program processes for software development and configuration management. This includes meaningful participation in Agile development process events such as scrums and sprint reviews</li>\n<li>Operate in a collaborative team composed of contractor and Government personnel</li>\n<li>Actively participate in collaborative development activities using conferencing technologies (i.e., Teams, Zoom, etc.)</li>\n</ul><h3>Required Experience/Qualifications</h3><ul>\n<li>Bachelor’s degree in a technical discipline such as electrical engineering, computer science, information technology, systems or software engineering from an accredited college or university or any bachelor’s degree and two years additional software development experience. Master’s degree desired. High school diploma and 5 years’ additional software development experience can substitute for bachelor’s degree.</li>\n<li>Minimum of 10 years’ software engineering experience.</li>\n<li>Minimum of 3 years’ experience in design of complex software systems</li>\n<li>Familiarity with industry software development standards and with the capabilities of related Department of Defense software systems.</li>\n<li>Employ interoperability standards commonly used in Department of Defense modeling and simulation (i.e., DIS and HLA)</li>\n<li>Develop Software using Java, C/C++, JavaScript, and XML in MS Windows, and Linux</li>\n<li>Properly apply object-oriented design principles to development efforts</li>\n<li>Ability to test and debug</li>\n<li>System operations in Linux/windows to include shell scripting</li>\n<li>Employ version control tools (i.e., Git) in compliance with program configuration management processes</li>\n<li>Operate collaboratively in a development team environment</li>\n<li>Aptitude for learning new technologies such as programming languages and tools</li>\n<li>Written and oral communication skills sufficient to explain designs and development issues to customer representatives and other engineers.</li>\n</ul><h3>Preferred Experience/Qualifications</h3><ul>\n<li>Experience with C2SET or AFMSTT</li>\n<li>Experience developing interfaces to military C4I systems</li>\n<li>Experience developing simulation-based training systems</li>\n<li>Experience in database design</li>\n<li>Experience developing in the React framework</li>\n<li>Knowledge of Amazon Web Services</li>\n</ul><h3>Special Requirements/Security Clearance</h3><p>Please note that pursuant to a government contract, this specific position requires U. S. Citizenship status with ability to obtain a SECRET security clearance.  Security Clearance requirements will be specified in the Government's Task Order.</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794900305,
+      "expiryDate": 1800084305,
+      "applicationLink": "https://himalayas.app/companies/cesicorp/jobs/senior-software-architect?utm_source=api",
+      "guid": "https://himalayas.app/companies/cesicorp/jobs/senior-software-architect"
+    },
+    {
+      "title": "Administrateur système niveau 3 – Hébergement VMware / AWS",
+      "excerpt": "Client : Secteur assurance Lieu réel de la mission : Québec, Québec Mode : Travail à distance occasionnel Durée : Du 1er février au 30 septembre 2027, renouvellement possible jusqu’en mars 2028 Horaire : 35 heures par semaine Nous recherchons un administrateur système niveau 3 pour assurer la continuité des opérations d’hébergement et soutenir la migration des infrastructures vers l’infonuagique.",
+      "companyName": "Xideral",
+      "companySlug": "xideral",
+      "companyLogo": "",
+      "employmentType": "Contractor",
+      "minSalary": null,
+      "maxSalary": null,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Mid-level"
+      ],
+      "currency": null,
+      "locationRestrictions": [
+        "Canada"
+      ],
+      "timezoneRestrictions": [
+        -7,
+        -6,
+        -5,
+        -4,
+        -3.5
+      ],
+      "categories": [
+        "Systems-Administrator",
+        "Cloud-Systems-Administrator",
+        "Virtualization-Administrator",
+        "Infrastructure-Engineer",
+        "VMware-Administrator"
+      ],
+      "parentCategories": [
+        "Operations",
+        "Developer"
+      ],
+      "description": "<p><strong>Client :</strong> Secteur assurance<br><strong>Lieu réel de la mission :</strong> Québec, Québec<br><strong>Mode :</strong> Travail à distance occasionnel<br><strong>Durée :</strong> Du 1er février au 30 septembre 2027, renouvellement possible jusqu’en mars 2028<br><strong>Horaire :</strong> 35 heures par semaine</p><p>Nous recherchons un administrateur système niveau 3 pour assurer la continuité des opérations d’hébergement et soutenir la migration des infrastructures vers l’infonuagique.</p><ul>\n<li>Administrer et faire évoluer les infrastructures d’hébergement, virtualisation, sauvegarde et stockage.</li>\n<li>Assurer disponibilité, performance, mises à jour, dépannage et soutien avancé en production.</li>\n<li>Automatiser les configurations et contribuer aux travaux de migration infonuagique et aux activités Agile SAFe.</li>\n<li>Documenter les configurations, l’exploitation, les plans et les procédures de dépannage.</li>\n</ul><p><strong>Qualifications :</strong> Au moins deux ans d’expérience pertinente en hébergement, dont de l’infonuagique; connaissance de VMware, AWS Backup, Druva, Terraform et GitHub; capacité de coder et disponibilité pour des tâches opérationnelles plus de 50 % du temps.</p><p>En soumettant votre candidature, vous consentez à ce que <a href=\"https://himalayas.app/companies/xideral\">Xideral</a> recueille, utilise et conserve vos renseignements personnels uniquement à des fins de recrutement et de sélection pour ce poste ou pour des opportunités similaires en lien avec vos domaines d’expertise. Vos informations seront traitées de manière confidentielle et conformément à la Loi 25 sur la protection des renseignements personnels du Québec. Vous pouvez en tout temps demander l’accès, la rectification ou la suppression de vos données en nous contactant à l’adresse suivante : .</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794900265,
+      "expiryDate": 1800084264,
+      "applicationLink": "https://himalayas.app/companies/xideral/jobs/administrateur-systeme-niveau-3-hebergement-vmware-aws?utm_source=api",
+      "guid": "https://himalayas.app/companies/xideral/jobs/administrateur-systeme-niveau-3-hebergement-vmware-aws"
+    },
+    {
+      "title": "Senior Project Engineer - ADMS",
+      "excerpt": "Position OverviewPower your Future with Qualus in our Digital Solutions department as a Senior Power Systems Engineer.",
+      "companyName": "Qualus",
+      "companySlug": "qualus",
+      "companyLogo": "https://cdn-images.himalayas.app/wmvpssqiz2co1hlr0brur1y0zjj5",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "salaryPeriod": "annual",
+      "seniority": [
+        "Senior"
+      ],
+      "currency": null,
       "locationRestrictions": [
         "Canada",
         "United States"
@@ -36,480 +395,20 @@
         14
       ],
       "categories": [
-        "SEO-Manager",
-        "Search-Marketing-Manager",
-        "Marketing-Manager",
-        "Growth-Marketing-Manager",
-        "Digital-Marketing-Manager",
-        "Senior-SEO-Manager",
-        "Senior-SEO-and-GEO-Specialist",
-        "Senior-SEO-Specialist",
-        "Senior-SEO-Strategist",
-        "SEO-Strategy-Manager"
+        "Senior-Project-Engineer",
+        "Power-Systems-Engineer",
+        "Electrical-Engineer",
+        "Systems-Integration-Engineer",
+        "ADMS-Engineer"
       ],
       "parentCategories": [
-        "Growth",
-        "Marketing"
+        "Hardware Engineer"
       ],
-      "description": "<h3>What the Role Is</h3><p>Babylist is seeking a leader for SEO, AEO, and GEO to guide how expecting and new parents discover us across traditional search and AI-powered platforms like ChatGPT, Google AI Overviews, and Claude. As AI changes how parents research products, get advice, and decide what to buy, discoverability is a priority for Babylist. This role will define and execute that strategy end to end including the roadmap and measurement plan.</p><p>You will work at the intersection of t",
-      "pubDate": 1794893246,
-      "expiryDate": 1800077246,
-      "applicationLink": "https://himalayas.app/companies/babyli/jobs/senior-seo-aeo-manager?utm_source=api",
-      "guid": "https://himalayas.app/companies/babyli/jobs/senior-seo-aeo-manager"
-    },
-    {
-      "title": "Senior Frontend Engineer",
-      "excerpt": "Seed Health is a microbiome science company pioneering clinically validated innovations for gut and whole-body health.",
-      "companyName": "Seed Health",
-      "companySlug": "seed-health",
-      "companyLogo": "https://cdn-images.himalayas.app/lyj321box4hq2hzfo8qr1iq3xuer",
-      "employmentType": "Full Time",
-      "minSalary": 160000,
-      "maxSalary": 180000,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Senior"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [
-        "United States"
-      ],
-      "timezoneRestrictions": [
-        -10,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        14
-      ],
-      "categories": [
-        "Frontend-Engineer",
-        "Front-End-Developer",
-        "React-Developer",
-        "Web-Developer",
-        "Software-Engineer",
-        "Senior-Frontend-Engineering",
-        "Front-End-Software-Engineer",
-        "Senior-Front-End-Developer",
-        "Senior-Frontend-Development",
-        "Senior-Frontend-Architect",
-        "Senior-Frontend-Engineer-(Angular)",
-        "Senior-Frontend-React-Developer",
-        "Senior-UI-Engineer"
-      ],
-      "parentCategories": [
-        "Developer"
-      ],
-      "description": "<div class=\"content-intro\">\n<p><a href=\"https://himalayas.app/companies/seed-health\">Seed Health</a> is a microbiome science company pioneering clinically validated innovations for gut and whole-body health.Our portfolio of gut-directed products is developed in collaboration with leading scientists and backed by human clinical research. We’re best known for DS-01® Daily Synbiotic—the #1 digestive health probiotic in the U.S.—trusted by millions of people for its benefits in and beyond the gut, i",
-      "pubDate": 1794893239,
-      "expiryDate": 1800077239,
-      "applicationLink": "https://himalayas.app/companies/seed-health/jobs/senior-frontend-engineer?utm_source=api",
-      "guid": "https://himalayas.app/companies/seed-health/jobs/senior-frontend-engineer"
-    },
-    {
-      "title": "Senior Security Engineer",
-      "excerpt": "At PrizePicks, we are the fastest-growing sports company in North America, as recognized by Inc.",
-      "companyName": "PrizePicks",
-      "companySlug": "prizepicks",
-      "companyLogo": "https://cdn-images.himalayas.app/krk6i6f223q2j9ar98jaonm2n8v1",
-      "employmentType": "Full Time",
-      "minSalary": 160000,
-      "maxSalary": 175000,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Senior"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [
-        "United States"
-      ],
-      "timezoneRestrictions": [
-        -10,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        14
-      ],
-      "categories": [
-        "Security-Engineer",
-        "Cloud-Security-Engineer",
-        "DevSecOps-Engineer",
-        "Product-Security-Engineer",
-        "Senior-Information-Security-Engineer",
-        "Senior-Cybersecurity-Engineer",
-        "Senior-Security-Operations-Engineer",
-        "Senior-Application-Security-Engineer"
-      ],
-      "parentCategories": [
-        "Developer"
-      ],
-      "description": "<div class=\"content-intro\"><p>At <a href=\"https://himalayas.app/companies/prizepicks\">PrizePicks</a>, we are the fastest-growing sports company in North America, as recognized by Inc. 5000. As the leading platform for Daily Fantasy Sports, we cover a diverse range of sports leagues, including the NFL, NBA, and Esports titles like League of Legends and Counter-Strike. Our team of over 550 employees thrives in an inclusive culture that values individuals from diverse backgrounds, regardless of the",
-      "pubDate": 1794893236,
-      "expiryDate": 1800077236,
-      "applicationLink": "https://himalayas.app/companies/prizepicks/jobs/senior-security-engineer?utm_source=api",
-      "guid": "https://himalayas.app/companies/prizepicks/jobs/senior-security-engineer"
-    },
-    {
-      "title": "DevSecOps / Python Engineer",
-      "excerpt": "OverviewEdgewater Federal Solutions is seeking an experienced DevSecOps/Python Engineer.",
-      "companyName": "Edgewater Federal Solutions",
-      "companySlug": "edgewater-federal-solutions",
-      "companyLogo": "https://cdn-images.himalayas.app/zxok4rncqn6vz0tmjbzg49jh0pd6",
-      "employmentType": "Full Time",
-      "minSalary": 190000,
-      "maxSalary": 215000,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Senior"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [
-        "United States"
-      ],
-      "timezoneRestrictions": [
-        -10,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        14
-      ],
-      "categories": [
-        "DevSecOps-Engineering",
-        "Python-Engineering",
-        "Cloud-Engineer",
-        "Platform-Engineering",
-        "Security-Engineering",
-        "Senior-DevSecOps-Engineer",
-        "Python-Engineer",
-        "Secure-DevOps-Engineer",
-        "Python-Software-Engineer"
-      ],
-      "parentCategories": [
-        "Developer"
-      ],
-      "description": "<h3>Overview</h3><p><a href=\"https://himalayas.app/companies/edgewater-federal-solutions\">Edgewater Federal Solutions</a> is seeking an experienced <strong>DevSecOps/Python Engineer</strong>.  The DevSecOps/Python Engineer provides senior technical leadership and hands-on engineering for secure software delivery, Python automation, cloud infrastructure, and CI/CD within a federal enterprise environment. The role establishes secure delivery standards, builds reusable automation and services, and ",
-      "pubDate": 1794893233,
-      "expiryDate": 1800077232,
-      "applicationLink": "https://himalayas.app/companies/edgewater-federal-solutions/jobs/devsecops-python-engineer?utm_source=api",
-      "guid": "https://himalayas.app/companies/edgewater-federal-solutions/jobs/devsecops-python-engineer"
-    },
-    {
-      "title": "Cloud Security Engineer (Entra ID)",
-      "excerpt": "OverviewJOB TITLE: Cloud Security Engineer (Identity & Access Management) GOVERNMENT AGENCY: DHS ICE - OSDSSPOSITION INFORMATION: Full timeLOCATION: RemotePOSITION TIMING: Candidate must obtain a DHS Public Trust clearance, which typically takes 4 to 6+ weeks to process.",
-      "companyName": "ITC Federal",
-      "companySlug": "itc-federal",
-      "companyLogo": "https://cdn-images.himalayas.app/1ct89u17r0amfql8jmot4wqg84ub",
-      "employmentType": "Full Time",
-      "minSalary": null,
-      "maxSalary": null,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Mid-level"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [
-        "United States"
-      ],
-      "timezoneRestrictions": [
-        -10,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        14
-      ],
-      "categories": [
-        "Cloud-Security-Engineer",
-        "Security-Engineer",
-        "Identity-And-Access-Management-Engineer",
-        "IAM-Engineer"
-      ],
-      "parentCategories": [
-        "Developer"
-      ],
-      "description": "<h3>Overview</h3><p>JOB TITLE: Cloud Security Engineer (Identity &amp; Access Management)</p><h3>GOVERNMENT AGENCY: DHS ICE - OSDSS</h3><h3>POSITION INFORMATION: Full time</h3><h3>LOCATION: Remote</h3><p>POSITION TIMING: Candidate must obtain a DHS Public Trust clearance, which typically takes 4 to 6+ weeks to process. Clearance must be fully granted before starting on the program.</p><p>BENEFITS: Health, Dental and Vision, 401(k), Tuition Reimbursement, Flexible Spending Account (FSA), 11 Paid ",
-      "pubDate": 1794893183,
-      "expiryDate": 1800077182,
-      "applicationLink": "https://himalayas.app/companies/itc-federal/jobs/cloud-security-engineer-entra-id?utm_source=api",
-      "guid": "https://himalayas.app/companies/itc-federal/jobs/cloud-security-engineer-entra-id"
-    },
-    {
-      "title": "Field Marketing Specialist",
-      "excerpt": "DescriptionWe’re growing and looking to hire a Field Marketing Specialist, who embodies our core values: People First, Customer Obsession, Strive for Excellence, and Integrity.",
-      "companyName": "Claroty",
-      "companySlug": "claroty",
-      "companyLogo": "https://cdn-images.himalayas.app/5a1mvjscfr0x20izyf1lwxdnzupe",
-      "employmentType": "Full Time",
-      "minSalary": 80000,
-      "maxSalary": 90000,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Mid-level"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [
-        "United States"
-      ],
-      "timezoneRestrictions": [
-        -10,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        14
-      ],
-      "categories": [
-        "Field-Marketing-Specialist",
-        "Field-Marketing-Manager",
-        "Demand-Generation-Manager",
-        "Marketing-Operations-Specialist",
-        "Partner-Marketing-Manager"
-      ],
-      "parentCategories": [],
-      "description": "<h3>Description</h3><p class=\"editor-paragraph\">We’re growing and looking to hire a <b><strong class=\"editor-text-bold\">Field Marketing Specialist</strong></b>, who embodies our core values: People First, Customer Obsession, Strive for Excellence, and Integrity.</p><p class=\"editor-paragraph\"><a href=\"https://himalayas.app/companies/claroty\">Claroty</a> is a global leader in protecting cyber-physical systems (CPS), dedicated to securing the critical infrastructure that keeps the world running. W",
-      "pubDate": 1794892661,
-      "expiryDate": 1800076660,
-      "applicationLink": "https://himalayas.app/companies/claroty/jobs/field-marketing-specialist?utm_source=api",
-      "guid": "https://himalayas.app/companies/claroty/jobs/field-marketing-specialist"
-    },
-    {
-      "title": "Incident Manager",
-      "excerpt": "Peraton OverviewPeraton is a next-generation national security company that drives missions of consequence spanning the globe and extending to the farthest reaches of the galaxy.",
-      "companyName": "Peraton",
-      "companySlug": "peraton",
-      "companyLogo": "https://cdn-images.himalayas.app/59ck8e7cbc0qt8l1bg2dlfvuh78u",
-      "employmentType": "Full Time",
-      "minSalary": 51000,
-      "maxSalary": 82000,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Mid-level"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [
-        "United States"
-      ],
-      "timezoneRestrictions": [
-        -10,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        14
-      ],
-      "categories": [
-        "Incident-Manager",
-        "IT-Service-Management-Manager",
-        "IT-Operations-Manager",
-        "Service-Delivery-Manager",
-        "Technical-Support-Manager"
-      ],
-      "parentCategories": [
-        "Operations"
-      ],
-      "description": "<h3>\n<a href=\"https://himalayas.app/companies/peraton\">Peraton</a> Overview</h3><p><a href=\"https://himalayas.app/companies/peraton\">Peraton</a> is a next-generation national security company that drives missions of consequence spanning the globe and extending to the farthest reaches of the galaxy. As the world’s leading mission capability integrator and transformative enterprise IT provider, we deliver trusted, highly differentiated solutions and technologies to protect our nation and allies. <",
-      "pubDate": 1794892501,
-      "expiryDate": 1800076500,
-      "applicationLink": "https://himalayas.app/companies/peraton/jobs/incident-manager?utm_source=api",
-      "guid": "https://himalayas.app/companies/peraton/jobs/incident-manager"
-    },
-    {
-      "title": "Client Success Administrator / South Africa",
-      "excerpt": "DescriptionAbout The Position Tech-Keys is seeking an experienced Client Success Administrator to join our team.",
-      "companyName": "Tech-Keys",
-      "companySlug": "tech-keys",
-      "companyLogo": "https://cdn-images.himalayas.app/hfip3tqlaef8wmfh54lxs1rblguz",
-      "employmentType": "Full Time",
-      "minSalary": 25000,
-      "maxSalary": 35000,
-      "salaryPeriod": "monthly",
-      "seniority": [
-        "Mid-level"
-      ],
-      "currency": "ZAR",
-      "locationRestrictions": [
-        "South Africa"
-      ],
-      "timezoneRestrictions": [
-        2
-      ],
-      "categories": [
-        "Client-Services-Administrator",
-        "Customer-Support-Specialist",
-        "Customer-Support-Representative",
-        "Service-Desk-Coordinator",
-        "IT-Support-Administration"
-      ],
-      "parentCategories": [
-        "Customer Service"
-      ],
-      "description": "<h3>Description</h3><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\">About The Position</strong></b></p><p class=\"editor-paragraph\"><a href=\"https://himalayas.app/companies/tech-keys\">Tech-Keys</a> is seeking an experienced Client Success Administrator to join our team. The ideal candidate will provide administrative and customer service support to our clients and consistently strive for quality service delivery. The successful candidate will be able to work through a daily queue ",
-      "pubDate": 1794892255,
-      "expiryDate": 1800076254,
-      "applicationLink": "https://himalayas.app/companies/tech-keys/jobs/client-success-administrator-south-africa?utm_source=api",
-      "guid": "https://himalayas.app/companies/tech-keys/jobs/client-success-administrator-south-africa"
-    },
-    {
-      "title": "Talent Acquisition Business Partner (Referral Partner, Commission-Based)",
-      "excerpt": "This is a referral partner role paid on commission, not a salaried job.",
-      "companyName": "Flowmingo",
-      "companySlug": "flowmingo",
-      "companyLogo": "https://cdn-images.himalayas.app/v4ww6028a74rnswnhr4xnu7nxv4g",
-      "employmentType": "Contractor",
-      "minSalary": null,
-      "maxSalary": null,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Mid-level"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [],
-      "timezoneRestrictions": [
-        -11,
-        -10,
-        -9.5,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        -4,
-        -3.5,
-        -3,
-        -2,
-        -1,
-        0,
-        1,
-        2,
-        3,
-        3.5,
-        4,
-        4.5,
-        5,
-        5.5,
-        5.75,
-        6,
-        6.5,
-        7,
-        8,
-        8.75,
-        9,
-        9.5,
-        10,
-        10.5,
-        11,
-        12,
-        12.75,
-        13,
-        14
-      ],
-      "categories": [
-        "Talent-Acquisition-Business-Partner",
-        "Talent-Acquisition-Partner",
-        "Recruitment-Business-Partner",
-        "Senior-Talent-Acquisition-Partner",
-        "Recruiting-Business-Partner",
-        "Talent-Acquisition-Specialist",
-        "Recruitment-Consultant",
-        "Recruiter"
-      ],
-      "parentCategories": [
-        "Human Resources"
-      ],
-      "description": "<p>This is a referral partner role paid on commission, not a salaried job.</p><p>Flowmingo is a free AI hiring platform backed by Y Combinator. As a Talent Acquisition Business Partner you introduce Flowmingo to the recruiters, HR teams and hiring managers you know, including your own company, and earn commission on every company that joins through you. No fixed hours, no quotas, work from anywhere.</p><p><strong>What you'll do</strong></p><ul class=\"list-disc list-outside leading-3 -mt-2\">\n<li ",
-      "pubDate": 1794891671,
-      "expiryDate": 1797472376,
-      "applicationLink": "https://himalayas.app/companies/flowmingo/jobs/talent-acquisition-business-partner-referral-partner-commission-based?utm_source=api",
-      "guid": "https://himalayas.app/companies/flowmingo/jobs/talent-acquisition-business-partner-referral-partner-commission-based"
-    },
-    {
-      "title": "Sales Growth Business Partner (Referral Partner, Commission-Based)",
-      "excerpt": "This is a referral partner role paid on commission, not a salaried job.",
-      "companyName": "Flowmingo",
-      "companySlug": "flowmingo",
-      "companyLogo": "https://cdn-images.himalayas.app/v4ww6028a74rnswnhr4xnu7nxv4g",
-      "employmentType": "Contractor",
-      "minSalary": null,
-      "maxSalary": null,
-      "salaryPeriod": "annual",
-      "seniority": [
-        "Mid-level"
-      ],
-      "currency": "USD",
-      "locationRestrictions": [],
-      "timezoneRestrictions": [
-        -11,
-        -10,
-        -9.5,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        -4,
-        -3.5,
-        -3,
-        -2,
-        -1,
-        0,
-        1,
-        2,
-        3,
-        3.5,
-        4,
-        4.5,
-        5,
-        5.5,
-        5.75,
-        6,
-        6.5,
-        7,
-        8,
-        8.75,
-        9,
-        9.5,
-        10,
-        10.5,
-        11,
-        12,
-        12.75,
-        13,
-        14
-      ],
-      "categories": [
-        "Partner-Business-Development-Representative",
-        "Partner-Growth-Specialist",
-        "Partner-Growth-Manager",
-        "Sales-Business-Partner",
-        "Business-Development-Partner-Manager",
-        "Growth-Partnerships-Lead",
-        "Growth-Sales-Representative",
-        "Business-Development-Partner",
-        "Partner-Sales-Representative",
-        "Business-Partner",
-        "Sales",
-        "Growth",
-        "Business-Development-Associate",
-        "Business-Development-Lead",
-        "Business-Development-Representative"
-      ],
-      "parentCategories": [
-        "Human Resources",
-        "Sales"
-      ],
-      "description": "<p>This is a referral partner role paid on commission, not a salaried job.</p><p>Flowmingo is a free AI hiring platform backed by Y Combinator. As a Sales Growth Business Partner you introduce Flowmingo to the companies and business leaders in your network and help them modernise how they hire. You earn commission on every company that joins through you. No fixed hours, work from anywhere.</p><p><strong>What you'll do</strong></p><ul class=\"list-disc list-outside leading-3 -mt-2\">\n<li class=\"lea",
-      "pubDate": 1794891671,
-      "expiryDate": 1797472485,
-      "applicationLink": "https://himalayas.app/companies/flowmingo/jobs/sales-growth-business-partner-referral-partner-commission-based?utm_source=api",
-      "guid": "https://himalayas.app/companies/flowmingo/jobs/sales-growth-business-partner-referral-partner-commission-based"
+      "description": "<h3>Position Overview</h3><p><strong>Power your Future with <a href=\"https://himalayas.app/companies/qualus\">Qualus</a></strong> in our Digital Solutions department as a Senior Power Systems Engineer. As a Senior Power Systems Engineer you will play a pivotal role in large scale system integration programs and take on the delivery of ADMS/OMS system and integration implementations from our leading ADMS/OMS software partners. You will also be providing consulting and project management services to our existing customers on projects involving product installation, integration development, interface support, modeling, application tuning, and system maintenance.</p><h3>Responsibilities</h3><ul>\n<li>Manage and coordinate all technical aspects of the project including planning, design, development, testing, and deployment.</li>\n<li>Develop and execute system build plans accounting for software architecture, information security, and hardware deployment.</li>\n<li>Work with the Project Manager and provide technical input into the overall project schedule, budget, resource requirements, and risk management.</li>\n<li>Lead engineering workshops on topics such as system design, data conversion, business process reviews, test, and validation planning, and change management.</li>\n<li>Installation and configuration of OSI monarch advanced distribution management applications  </li>\n<li>Design and configure SCADA/GMS/EMS/ADMS/OMS systems to meet the specific needs of our clients.</li>\n<li>Deploy and integrate SCADA/GMS/EMS/ADMS/OMS systems with other equipment and software.</li>\n<li>Provide training and support to clients during and after the implementation process.</li>\n<li>Collaborate with project teams and other stakeholders to ensure successful implementation of the project.</li>\n<li>Perform system and acceptance testing with the end customers.</li>\n<li>Test and validate system configurations to ensure they meet client requirements and industry standards including NERC CIP.</li>\n<li>Develop scripts and other solutions to integrate 3rd party systems.</li>\n<li>Identify and troubleshoot any issues that arise during the implementation process.</li>\n<li>Keep up to date with the latest developments in the field and ensure systems are implemented in accordance with industry best practices.</li>\n<li>Travel to customer sites and work directly with customers to successfully deliver, test, and integrate systems</li>\n<li>Contribute to proposals, work plans, budgets, and schedules for services opportunities.</li>\n</ul><h3>Minimum Qualifications</h3><ul>\n<li>Bachelor’s degree in related field of study.</li>\n<li>Ten (10) years of combined experience in project management and utility systems software implementation and consulting.</li>\n<li>Demonstratable experience interacting with clients to understand relationships and priorities.</li>\n<li>Strong analytical, problem-solving, and conceptual skills.</li>\n<li>Ability to operate as part of a team in organizing, leading, planning, and executing large-scale projects from the envisioning stage through implementation.</li>\n<li>Ability to prioritize work assignments and shift work efforts based on client business goals.</li>\n<li>Knowledge of project integration lifecycle and methodology.</li>\n<li>Excellent problem-solving, written and oral communications and customer service skills.</li>\n<li>Ability to lead and facilitate workshops covering the full breadth of the project lifecycle.</li>\n<li>Ability to work with new technologies and tools as required by the needs of a project. (MS Project, JIRA, OneNote)</li>\n<li>Ability to work independently and self-direct your workday.</li>\n<li>Experience creating work estimates, staffing plans, and proposals for projects of various scale and complexity.</li>\n<li>Willing and able to travel up to 50% to customer project sites</li>\n<li>Experience and ability to work on projects that may not be ADMS /OMS related with appropriate training.</li>\n<li>Installation and configuration of OSI monarch advanced distribution management applications such as Distribution Power Flow (DPF), Fault Location Isolation &amp; Service Restoration (FLISR), and Volt/VAR Control &amp; Optimization (VVC/VVO)</li>\n<li>Experience with GIS building tools and model</li>\n<li>Experience in configuring Maven, Leitmotif, and eMAP</li>\n</ul><h3>Benefits &amp; Compensation</h3><a href=\"https://himalayas.app/companies/qualus\">Qualus</a> offers a competitive benefits package for eligible employees, which may include Medical, Dental, Vision, Life Insurance, Short- and Long-Term Disability coverage, Retirement Savings Plans (including employer matching where applicable), Flexible Spending and/or Health Spending Accounts, Employee Assistance Programs (EAP), Parental Leave, Paid Time Off, and Company Holidays. Benefits offerings may vary based on position, work location, and eligibility requirements. The compensation range for this position is provided in accordance with applicable laws and market practices. The final base salary offered may vary based on factors including, but not limited to, education, qualifications, certifications, experience, skills, seniority, geographic location, internal equity, performance, and business needs. Compensation ranges are subject to change at the Company's discretion and as permitted by applicable law.<h3>Company Overview</h3><p><a href=\"https://himalayas.app/companies/qualus\">Qualus</a> is a leading pure-play power solutions firm and innovator at the forefront of power infrastructure transformation, with differentiated capabilities across grid modernization, resiliency, security, and sustainability. The firm partners with utilities, commercial, industrial, data center, and government clients, and renewable and energy storage developers, offering comprehensive solutions through boutique and integrated advisory, planning, engineering, digital solutions, program management, energy efficiency and specialized field services. <a href=\"https://himalayas.app/companies/qualus\">Qualus</a> also provides software and technology enabled services and develops breakthrough solutions for critical power industry challenges such as distributed and variable resource integration, emergency management, and secure data exchange. The firm has over 2,000 professionals, with offices throughout the U.S. and Canada.</p><h3>Equal Opportunity Employer</h3><p>We are an equal opportunity employer and value diversity. We are committed to providing an inclusive workplace and do not discriminate on any grounds protected by applicable human rights legislation across Canada and the US.</p><p>We are committed to a secure and transparent hiring process. We do not request payment or sensitive personal information, such as Social Security numbers or banking details, during the application process. Please use caution and verify opportunities through our official channels.</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1794900203,
+      "expiryDate": 1800084202,
+      "applicationLink": "https://himalayas.app/companies/qualus/jobs/senior-project-engineer-adms-4151084181?utm_source=api",
+      "guid": "https://himalayas.app/companies/qualus/jobs/senior-project-engineer-adms-4151084181"
     }
   ]
 }

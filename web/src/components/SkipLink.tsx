@@ -1,39 +1,48 @@
 "use client";
+
 import Link from "@mui/material/Link";
+import { visuallyHidden } from "@/components/visuallyHidden";
+
+export interface SkipLinkProps {
+  /** Id of the element to jump to, without "#". */
+  targetId?: string;
+  label?: string;
+}
 
 /**
- * §10.5 — Skip-to-main link. Visually hidden until focused.
- * Must be the first focusable element in the DOM.
+ * First focusable element on the page (SPEC §10.3, WCAG 2.4.1). Visually
+ * hidden until it receives keyboard focus, then shown over the app bar.
  */
-export default function SkipLink() {
+export function SkipLink({ targetId = "main", label = "Skip to job results" }: SkipLinkProps) {
   return (
     <Link
-      href="#main"
-      sx={{
-        position: "absolute",
-        left: "-9999px",
-        top: "auto",
-        width: "1px",
-        height: "1px",
-        overflow: "hidden",
-        zIndex: 9999,
-        "&:focus": {
-          position: "fixed",
-          top: 8,
-          left: 8,
-          width: "auto",
+      href={`#${targetId}`}
+      data-testid="skip-link"
+      sx={(theme) => ({
+        ...visuallyHidden,
+        "&:focus, &:focus-visible": {
+          clip: "auto",
+          clipPath: "none",
           height: "auto",
+          width: "auto",
+          margin: 0,
           overflow: "visible",
-          px: 2,
-          py: 1,
-          bgcolor: "background.paper",
-          border: "2px solid",
-          borderColor: "primary.main",
-          borderRadius: 1,
+          whiteSpace: "normal",
+          position: "fixed",
+          top: theme.spacing(1),
+          left: theme.spacing(1),
+          zIndex: theme.zIndex.tooltip + 1,
+          padding: theme.spacing(1, 2),
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.primary.main,
+          boxShadow: theme.shadows[4],
+          borderRadius: `${theme.shape.borderRadius}px`,
         },
-      }}
+      })}
     >
-      Skip to job results
+      {label}
     </Link>
   );
 }
+
+export default SkipLink;

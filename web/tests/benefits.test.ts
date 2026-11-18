@@ -1,111 +1,160 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest";
-import { extractBenefits } from "@/lib/matching/benefits";
+import { describe, expect, it } from "vitest";
+import {
+  BENEFIT_DICTIONARY,
+  EVIDENCE_CONTEXT_CHARS,
+  extractBenefits,
+} from "@/lib/matching/benefits";
 import type { Job } from "@/lib/types";
 
-function makeJob(descriptionText: string, excerpt = ""): Job {
+function makeJob(overrides: Partial<Job> = {}): Job {
   return {
-    id: "test:1", source: "himalayas", sourceId: "1",
-    title: "Engineer", company: "Acme",
-    companyLogo: null, applyUrl: "", sourceUrl: "",
-    employmentType: "full_time", seniority: [], salary: null,
+    id: "himalayas:test-1",
+    source: "himalayas",
+    sourceId: "test-1",
+    title: "Senior Frontend Engineer",
+    company: "Acme",
+    companyLogo: null,
+    applyUrl: "https://example.com/apply",
+    sourceUrl: "https://example.com/job",
+    employmentType: "full_time",
+    seniority: ["senior"],
+    salary: null,
     location: { worldwide: true, countries: [], regions: [], raw: null },
-    timezones: null, categories: [], tags: [],
-    excerpt: excerpt || null,
-    descriptionHtml: "", descriptionText,
-    publishedAt: "2026-01-01T00:00:00.000Z", expiresAt: null, alsoOn: [],
+    timezones: [],
+    categories: [],
+    tags: [],
+    excerpt: null,
+    descriptionHtml: "",
+    descriptionText: "",
+    publishedAt: "2026-11-01T00:00:00.000Z",
+    expiresAt: null,
+    alsoOn: [],
+    ...overrides,
   };
 }
 
-// ── Happy path ─────────────────────────────────────────────────────────────
+const keysOf = (job: Job) => extractBenefits(job).map((b) => b.key);
 
-describe("extractBenefits — detects benefits", () => {
-  it("detects health insurance", () => {
-    const job = makeJob("We offer health insurance and dental coverage.");
-    const benefits = extractBenefits(job);
-    expect(benefits.some((b) => b.key === "health")).toBe(true);
-  });
-
-  it("detects PTO", () => {
-    const job = makeJob("Enjoy unlimited vacation and paid time off.");
-    const benefits = extractBenefits(job);
-    expect(benefits.some((b) => b.key === "pto")).toBe(true);
-  });
-
-  it("detects learning budget", () => {
-    const job = makeJob("Annual learning budget and conference attendance.");
-    const benefits = extractBenefits(job);
-    expect(benefits.some((b) => b.key === "learning")).toBe(true);
-  });
-
-  it("detects equity", () => {
-    const job = makeJob("Competitive salary plus stock options.");
-    const benefits = extractBenefits(job);
-    expect(benefits.some((b) => b.key === "equity")).toBe(true);
-  });
-
-  it("includes evidence snippets", () => {
-    const job = makeJob("We offer health insurance for all full-time employees.");
-    const benefits = extractBenefits(job);
-    const health = benefits.find((b) => b.key === "health")!;
-    expect(health.evidence.length).toBeGreaterThan(0);
-    expect(health.evidence[0]).toContain("health insurance");
+describe("BENEFIT_DICTIONARY (SPEC §8)", () => {
+  it("has the 9 benefit keys in SPEC order with labels", () => {
+    expect(BENEFIT_DICTIONARY.map((d) => [d.key, d.label])).toEqual([
+      ["health", "Health / Medical"],
+      ["retirement", "Retirement"],
+      ["equity", "Equity"],
+      ["pto", "Paid time off"],
+      ["parental_leave", "Parental leave"],
+      ["learning", "Learning budget"],
+      ["home_office", "Home-office stipend"],
+      ["flexible_hours", "Flexible hours"],
+      ["wellness", "Wellness"],
+    ]);
   });
 });
 
-// ── Edge cases ─────────────────────────────────────────────────────────────
-
-describe("extractBenefits — edge cases", () => {
-  it("returns [] when no benefits found", () => {
-    const job = makeJob("We do backend development with Rust.");
-    expect(extractBenefits(job)).toHaveLength(0);
-  });
-
-  it('"diversity, equity & inclusion" does NOT count as equity benefit', () => {
-    const job = makeJob("We value diversity, equity & inclusion in our team.");
+describe("extractBenefits (FR8)", () => {
+  it("detects health, PTO and learning with evidence", () => {
+    const job = makeJob({
+      descriptionText:
+        "We build React apps. Benefits: health insurance for you and family, unlimited PTO, and a yearly learning budget of 1,000 dollars.",
+    });
     const benefits = extractBenefits(job);
-    expect(benefits.some((b) => b.key === "equity")).toBe(false);
+    expect(benefits.map((b) => b.key)).toEqual(["health", "pto", "learning"]);
+    const health = benefits.find((b) => b.key === "health")!;
+    expect(health.label).toBe("Health / Medical");
+    expect(health.evidence).toHaveLength(1);
+    expect(health.evidence[0]).toContain("health insurance");
+    expect(benefits.find((b) => b.key === "pto")!.evidence[0]).toContain("unlimited PTO");
   });
 
-  it("caps evidence at 2 snippets per benefit", () => {
-    // Three occurrences of medical in the text
-    const text =
-      "medical plan available. medical coverage included. medical expenses reimbursed.";
-    const job = makeJob(text);
-    const health = extractBenefits(job).find((b) => b.key === "health")!;
-    expect(health.evidence.length).toBeLessThanOrEqual(2);
+  it("detects one benefit per category across all 9 categories", () => {
+    const job = makeJob({
+      descriptionText: [
+        "Dental cover.",
+        "A 401(k) plan with match.",
+        "Stock options for all.",
+        "25 days of paid vacation.",
+        "Generous parental leave.",
+        "Conference tickets.",
+        "Coworking membership.",
+        "We work async.",
+        "Gym membership.",
+      ].join(" "),
+    });
+    expect(keysOf(job)).toEqual([
+      "health",
+      "retirement",
+      "equity",
+      "pto",
+      "parental_leave",
+      "learning",
+      "home_office",
+      "flexible_hours",
+      "wellness",
+    ]);
   });
 
-  it("produces at most one entry per key", () => {
-    const job = makeJob("health insurance, dental, vision coverage, medical plan");
+  it("returns [] when no benefits are mentioned", () => {
+    expect(extractBenefits(makeJob({ descriptionText: "Build React components with TypeScript." }))).toEqual([]);
+    expect(extractBenefits(makeJob({ descriptionText: "", excerpt: null }))).toEqual([]);
+  });
+
+  it("does not count 'diversity, equity and inclusion' as equity", () => {
+    for (const text of [
+      "We are committed to diversity, equity and inclusion.",
+      "We value diversity, equity & inclusion.",
+      "Our diversity equity programme is strong.",
+    ]) {
+      expect(keysOf(makeJob({ descriptionText: text }))).not.toContain("equity");
+    }
+  });
+
+  it("still counts real equity next to a DEI statement", () => {
+    const job = makeJob({
+      descriptionText: "We support diversity, equity and inclusion. You also get equity in the company.",
+    });
+    const equity = extractBenefits(job).find((b) => b.key === "equity");
+    expect(equity).toBeDefined();
+    expect(equity!.evidence).toHaveLength(1);
+    expect(equity!.evidence[0]).toContain("get equity in the company");
+  });
+
+  it("keeps at most 2 evidence snippets per benefit and one entry per key", () => {
+    const job = makeJob({
+      descriptionText:
+        "Medical cover from day one. " + "x".repeat(200) + " Dental cover too. " + "y".repeat(200) + " Vision cover as well.",
+    });
     const benefits = extractBenefits(job);
-    const healthBenefits = benefits.filter((b) => b.key === "health");
-    expect(healthBenefits).toHaveLength(1);
+    expect(benefits.filter((b) => b.key === "health")).toHaveLength(1);
+    const health = benefits[0];
+    expect(health.evidence).toHaveLength(2);
+    expect(health.evidence[0]).toContain("Medical");
+    expect(health.evidence[1]).toContain("Dental");
   });
 
-  it("also scans excerpt field", () => {
-    const job = makeJob("", "We offer a learning budget for everyone.");
-    const benefits = extractBenefits(job);
-    expect(benefits.some((b) => b.key === "learning")).toBe(true);
+  it("bounds each snippet to about 60 chars of context and collapses whitespace", () => {
+    const before = "a".repeat(100);
+    const after = "b".repeat(100);
+    const job = makeJob({ descriptionText: `${before}\n\n   pension   ${after}` });
+    const [retirement] = extractBenefits(job);
+    const snippet = retirement.evidence[0];
+    expect(snippet).not.toMatch(/\s{2,}|\n/);
+    expect(snippet).toContain("pension");
+    expect(snippet.length).toBeLessThanOrEqual("pension".length + 2 * EVIDENCE_CONTEXT_CHARS);
   });
 
-  it("detects retirement via 401(k)", () => {
-    const job = makeJob("We match your 401(k) contributions up to 4%.");
-    expect(extractBenefits(job).some((b) => b.key === "retirement")).toBe(true);
+  it("searches the excerpt as well as descriptionText", () => {
+    const job = makeJob({ descriptionText: "Build things.", excerpt: "Remote role with a home office stipend." });
+    expect(keysOf(job)).toEqual(["home_office"]);
   });
 
-  it("detects flexible hours via async", () => {
-    const job = makeJob("We are an async-first, fully remote team.");
-    expect(extractBenefits(job).some((b) => b.key === "flexible_hours")).toBe(true);
+  it("is word-bounded and case-insensitive", () => {
+    expect(keysOf(makeJob({ descriptionText: "We use PTOLEMY and gymnastics data." }))).toEqual([]);
+    expect(keysOf(makeJob({ descriptionText: "PAID TIME OFF included." }))).toEqual(["pto"]);
   });
 
-  it("detects parental leave", () => {
-    const job = makeJob("16 weeks maternity and 8 weeks paternity leave.");
-    expect(extractBenefits(job).some((b) => b.key === "parental_leave")).toBe(true);
-  });
-
-  it("detects wellness", () => {
-    const job = makeJob("Monthly wellness stipend for gym or mental health.");
-    expect(extractBenefits(job).some((b) => b.key === "wellness")).toBe(true);
+  it("gives the same result when called twice (no shared regex state)", () => {
+    const job = makeJob({ descriptionText: "Health insurance and wellness stipend." });
+    expect(extractBenefits(job)).toEqual(extractBenefits(job));
   });
 });

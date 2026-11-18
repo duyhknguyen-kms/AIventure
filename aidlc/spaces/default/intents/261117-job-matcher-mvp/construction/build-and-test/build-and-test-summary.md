@@ -1,48 +1,50 @@
 # Build and Test Summary
 
+**Stage:** build-and-test  
 **Intent:** 261117-job-matcher-mvp  
-**Date:** 2026-11-17  
-**Stage:** Build and Test  
-**Outcome:** PASS ✅
+**Date:** 2026-11-18
+
+---
+
+## Outcome
+
+All quality gates passed. The build is green.
+
+| Gate | Status |
+|------|--------|
+| `npm test` — 366 tests, 30 files | ✅ PASS |
+| `npx tsc --noEmit` — TypeScript strict | ✅ PASS |
+| `npm run lint` — ESLint (0 errors) | ✅ PASS |
+| `npm run build` — Next.js production build | ✅ PASS |
+| WCAG 2.2 AA automated checks (axe) | ✅ PASS |
+| §7.5 scoring golden test (88%) | ✅ PASS |
+
+## Coverage Note
+
+The express scope uses the Minimal test strategy (1 test per requirement, happy-path floor per component). No global line-coverage floor applies for this scope.
+
+## Test Strategy: Minimal (express)
+
+- 1 verifiable test per identified requirement
+- At least 1 happy-path unit test per component
+- Unit tests are the default level
+- Existing suite remains green
 
 ## What was verified
 
-The full application was built directly in the Kiro chat session across 8 delivery stages
-and 4 post-MVP improvements. Build and Test ran against the delivered codebase and
-confirmed it meets all quality gates for the `express` scope.
+1. **Data normalization** (employment type, seniority, location, timezone, salary, HTML stripping) — all mapping tables covered against real Himalayas/Remotive API shapes.
+2. **Matching engine** — 7-factor scoring including the §7.5 SPEC worked example; hard filters F1–F3; ranking by score then recency.
+3. **API layer** — `/api/jobs` route returns 200/400/502 as specified; caching (TTL, stale-on-error, in-flight dedupe) tested with deterministic mocks.
+4. **CV upload** — PDF/TXT parsing route and deterministic skill/title/seniority extraction.
+5. **Chat assistant** — Groq streaming SSE proxy, error states, job context building.
+6. **UI components** — CriteriaForm, JobCard, JobDetailPanel, JobList, Dashboard (all major states); WCAG AA automated checks with axe-core.
+7. **Dark mode** — `AppThemeProvider` persists and toggles theme; no SSR mismatch.
+8. **Batch 1 features** — StatsBar (stats computed from ranked jobs), CategoryFilter (category chips), staggered card animations.
 
-## Quality gate results
+## Tests not executed in this stage
 
-| Gate | Status |
-|---|---|
-| `npm test` — 289 tests, 0 failures | ✅ PASS |
-| `npx tsc --noEmit` — 0 TypeScript errors | ✅ PASS |
-| `npm run lint` — 0 errors (5 non-blocking warnings in test files) | ✅ PASS |
-| axe WCAG 2.x AA — 0 violations across 4 component a11y test suites | ✅ PASS |
-| §7.5 golden scoring test — 88% | ✅ PASS |
-| Existing test suite green | ✅ PASS |
-
-## Lint fixes applied during this stage
-
-7 lint errors were found and fixed before marking this stage complete:
-
-| Error | File | Fix |
-|---|---|---|
-| `react-hooks/set-state-in-effect` | `useCriteria.ts` | Suppress (intentional SSR-safe localStorage read) |
-| `react-hooks/set-state-in-effect` | `JobList.tsx` | Suppress (intentional pagination reset) |
-| `react-hooks/set-state-in-effect` × 2 | `page.tsx` | Suppress (intentional live region + initial fetch) |
-| `react/no-unescaped-entities` | `CvScanner.tsx` | `don't` → `don&apos;t` |
-| `react/no-unescaped-entities` × 2 | `JobDetailPanel.tsx` | `"…"` → `&quot;…&quot;` |
-
-## NFR compliance
-
-| NFR | Target | Status |
-|---|---|---|
-| Accessibility (WCAG 2.2 AA) | Zero axe violations | ✅ Automated; manual checks noted in §10.5 checklist |
-| Security | No hardcoded secrets | ✅ API key in `.env.local`, never in client code |
-| Testability | Minimal strategy floor | ✅ 289 tests across all modules |
-| API terms | Himalayas + Remotive compliance | ✅ See PROGRESS.md compliance section |
-
-## Next stage
-
-Deployment Pipeline
+- Manual browser keyboard walkthrough (§10.5 checklist item)
+- Screen reader test with NVDA + Chrome
+- 320 px / 200% zoom visual verification
+- Real Groq streaming (mocked in tests; verified manually with the API key)
+- Real Himalayas/Remotive pagination over 5+ pages (single-page fixtures used)

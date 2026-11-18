@@ -1,46 +1,16 @@
-/**
- * §5.3 — Aggregation layer
- *
- * Runs both source fetches in parallel (Promise.allSettled), deduplicates,
- * drops expired jobs, and sorts by publishedAt descending.
- * Each source is wrapped in the TTL cache (§5.5).
- */
-import type { Job, SourceName, SourceStatus } from "@/lib/types";
+import { CACHE_TTL_SECONDS } from "@/lib/config";
 import { fetchHimalayas } from "@/lib/sources/himalayas";
 import { fetchRemotive } from "@/lib/sources/remotive";
+import type { Job, SourceName, SourceStatus } from "@/lib/types";
+import { UpstreamError } from "@/lib/sources/http";
+import { type CachedResult, getOrFetch } from "./cache";
 import { dedupeJobs } from "./dedupe";
-import {
-  getOrFetch,
-  getStale,
-  isBlocked,
-  setBlocked,
-} from "./cache";
-import { DEFAULT_HIMALAYAS_MAX_PAGES } from "@/lib/config";
 
-const TTL = Number(process.env.CACHE_TTL_SECONDS) || undefined; // undefined → config default
-
-function himlayasKey(q?: string) {
-  return q ? `himalayas:search:${q}` : "himalayas:browse";
-}
-
-/** Local filter: every q-token must appear in title/company/tags/categories/descriptionText */
-function matchesQuery(job: Job, q: string): boolean {
-  const haystack = [
-    job.title,
-    job.company,
-    ...job.tags,
-    ...job.categories,
-    job.descriptionText,
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  return q
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean)
-    .every((token) => haystack.includes(token));
-}
+/**
+ * Aggregation (SPEC §5.3, FR1, FR1.3, FR3, FR4, FR10): both sources in
+ * parallel through the cache, partial results when one fails, local `q`
+ * filtering, cross-source dedupe, newest first, expired jobs dropped.
+ */
 
 export interface AggregateResult {
   jobs: Job[];
@@ -48,107 +18,114 @@ export interface AggregateResult {
   fetchedAt: string;
 }
 
-export async function aggregateJobs(opts: { q?: string } = {}): Promise<AggregateResult> {
-  const { q } = opts;
-  const maxPages = Number(process.env.HIMALAYAS_MAX_PAGES) || DEFAULT_HIMALAYAS_MAX_PAGES;
-  const himKey = himlayasKey(q);
+/** Injectable collaborators; production uses the real adapters and clock. */
+export interface AggregateDeps {
+  fetchHimalayas: (q?: string) => Promise<Job[]>;
+  fetchRemotive: () => Promise<Job[]>;
+  now: () => number;
+  ttlSeconds: number;
+}
 
-  // ── Fetch both sources in parallel ──────────────────────────────────────
-  const [himResult, remotiveResult] = await Promise.allSettled([
-    fetchWithCache(himKey, () => fetchHimalayas(q, maxPages)),
-    fetchWithCache("remotive:all", () => fetchRemotive()),
+const defaultDeps: AggregateDeps = {
+  fetchHimalayas: (q) => fetchHimalayas(q),
+  fetchRemotive: () => fetchRemotive(),
+  now: () => Date.now(),
+  ttlSeconds: CACHE_TTL_SECONDS,
+};
+
+/** Cache keys (SPEC §5.5). The query part is lower-cased and whitespace-collapsed. */
+export function himalayasCacheKey(q: string | undefined): string {
+  return q ? `himalayas:search:${q}` : "himalayas:browse";
+}
+export const REMOTIVE_CACHE_KEY = "remotive:all";
+
+/** Trims, lower-cases and collapses whitespace; empty → undefined. */
+export function normalizeQuery(q: string | undefined): string | undefined {
+  const text = (q ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  return text.length > 0 ? text : undefined;
+}
+
+/** True when every whitespace-separated token of `q` occurs in the job's text (SPEC §5.3 step 3). */
+export function matchesQuery(job: Job, q: string): boolean {
+  const text = [job.title, job.company, job.tags.join(" "), job.categories.join(" "), job.descriptionText]
+    .join(" ")
+    .toLowerCase();
+  return q.split(" ").every((token) => text.includes(token));
+}
+
+/** True when `expiresAt` is set and in the past (SPEC §5.3 step 5). Unparseable dates are kept. */
+export function isExpired(job: Job, nowMs: number): boolean {
+  if (job.expiresAt === null) return false;
+  const expires = Date.parse(job.expiresAt);
+  return !Number.isNaN(expires) && expires < nowMs;
+}
+
+function toStatus(
+  name: SourceName,
+  settled: PromiseSettledResult<CachedResult<Job[]>>,
+  count: number,
+): SourceStatus {
+  if (settled.status === "rejected") {
+    // Unexpected errors were already logged in full by the cache.
+    const error = settled.reason instanceof UpstreamError ? settled.reason.message : "Unexpected error";
+    return { name, ok: false, count: 0, cached: false, error };
+  }
+  const { cached, error } = settled.value;
+  return { name, ok: true, count, cached, ...(error === undefined ? {} : { error }) };
+}
+
+function sourceJobs(settled: PromiseSettledResult<CachedResult<Job[]>>): Job[] {
+  return settled.status === "fulfilled" ? settled.value.value : [];
+}
+
+function byPublishedAtDesc(a: Job, b: Job): number {
+  return (Date.parse(b.publishedAt) || 0) - (Date.parse(a.publishedAt) || 0);
+}
+
+/**
+ * Never rejects for upstream failures: a failed source becomes
+ * `{ ok: false, count: 0, error }`. A source served stale after a failed
+ * refresh stays `ok: true` with `cached: true` and `error` set (it still
+ * delivers jobs). `count` is the source's jobs after `q` filtering and the
+ * expiry check, before dedupe.
+ */
+export async function aggregateJobs(
+  opts: { q?: string } = {},
+  deps: Partial<AggregateDeps> = {},
+): Promise<AggregateResult> {
+  const d = { ...defaultDeps, ...deps };
+  const q = normalizeQuery(opts.q);
+
+  const [himalayas, remotive] = await Promise.allSettled([
+    getOrFetch({
+      key: himalayasCacheKey(q),
+      source: "himalayas",
+      fetcher: () => d.fetchHimalayas(q),
+      ttlSeconds: d.ttlSeconds,
+      now: d.now,
+    }),
+    getOrFetch({
+      key: REMOTIVE_CACHE_KEY, // full feed, never per query (SPEC §5.2)
+      source: "remotive",
+      fetcher: () => d.fetchRemotive(),
+      ttlSeconds: d.ttlSeconds,
+      now: d.now,
+    }),
   ]);
 
-  // ── Build SourceStatus for each ──────────────────────────────────────────
-  const sources: SourceStatus[] = [];
-  let allJobs: Job[] = [];
-  let fetchedAt = new Date().toISOString();
+  const nowMs = d.now();
+  const keep = (job: Job) => !isExpired(job, nowMs) && (q === undefined || matchesQuery(job, q));
+  const himalayasJobs = sourceJobs(himalayas).filter(keep);
+  const remotiveJobs = sourceJobs(remotive).filter(keep);
 
-  // Himalayas
-  if (himResult.status === "fulfilled") {
-    const { jobs, fetchedAt: fa, cached } = himResult.value;
-    allJobs.push(...jobs);
-    fetchedAt = fa;
-    sources.push({ name: "himalayas", ok: true, count: jobs.length, cached });
-  } else {
-    const error = formatError(himResult.reason);
-    // Try stale fallback
-    const stale = getStale<{ jobs: Job[] }>(himKey);
-    if (stale) {
-      allJobs.push(...stale.value.jobs);
-      sources.push({ name: "himalayas", ok: false, count: stale.value.jobs.length, cached: true, error });
-    } else {
-      sources.push({ name: "himalayas", ok: false, count: 0, cached: false, error });
-    }
-  }
+  const jobs = dedupeJobs([...himalayasJobs, ...remotiveJobs]).sort(byPublishedAtDesc);
 
-  // Remotive
-  if (remotiveResult.status === "fulfilled") {
-    const { jobs, fetchedAt: fa, cached } = remotiveResult.value;
-    allJobs.push(...jobs);
-    if (!fetchedAt || fa > fetchedAt) fetchedAt = fa;
-    sources.push({ name: "remotive", ok: true, count: jobs.length, cached });
-  } else {
-    const error = formatError(remotiveResult.reason);
-    const stale = getStale<{ jobs: Job[] }>("remotive:all");
-    if (stale) {
-      allJobs.push(...stale.value.jobs);
-      sources.push({ name: "remotive", ok: false, count: stale.value.jobs.length, cached: true, error });
-    } else {
-      sources.push({ name: "remotive", ok: false, count: 0, cached: false, error });
-    }
-  }
-
-  // ── Local q-filter on Remotive + safety net on all ──────────────────────
-  if (q) {
-    allJobs = allJobs.filter((job) => matchesQuery(job, q));
-  }
-
-  // ── Dedupe, drop expired, sort ───────────────────────────────────────────
-  const now = new Date().toISOString();
-  const deduped = dedupeJobs(allJobs).filter(
-    (j) => !j.expiresAt || j.expiresAt > now,
-  );
-  deduped.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
-
-  return { jobs: deduped, sources, fetchedAt };
-}
-
-// ── Cache wrapper ─────────────────────────────────────────────────────────
-
-async function fetchWithCache(
-  key: string,
-  fetcher: () => Promise<{ jobs: Job[]; skipped: number }>,
-): Promise<{ jobs: Job[]; fetchedAt: string; cached: boolean }> {
-  if (isBlocked(key)) {
-    throw new Error(`Source blocked (rate limited): ${key}`);
-  }
-
-  try {
-    const result = await getOrFetch(key, fetcher, TTL);
-    return {
-      jobs: result.value.jobs,
-      fetchedAt: result.fetchedAt,
-      cached: result.fresh,
-    };
-  } catch (err) {
-    // Handle 429 — record block time and re-throw
-    type ApiErr = { type: string; status?: number; retryAfter?: number };
-    const e = err as ApiErr;
-    if (err && typeof err === "object" && "type" in err && e.type === "http" && e.status === 429) {
-      setBlocked(key, e.retryAfter ?? 60);
-    }
-    throw err;
-  }
-}
-
-function formatError(reason: unknown): string {
-  if (!reason || typeof reason !== "object") return String(reason);
-  const r = reason as Record<string, unknown>;
-  if (r.type === "http") {
-    const msg = `HTTP ${r.status}`;
-    return r.retryAfter ? `${msg} (retry after ${r.retryAfter}s)` : msg;
-  }
-  if (typeof r.message === "string") return r.message;
-  return "Unknown error";
+  return {
+    jobs,
+    sources: [
+      toStatus("himalayas", himalayas, himalayasJobs.length),
+      toStatus("remotive", remotive, remotiveJobs.length),
+    ],
+    fetchedAt: new Date(nowMs).toISOString(),
+  };
 }

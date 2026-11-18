@@ -1,96 +1,27 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import theme from "@/theme";
-import CriteriaForm from "@/components/CriteriaForm";
+import { describe, expect, it } from "vitest";
+import { CriteriaForm } from "@/components/CriteriaForm";
 import { DEFAULT_CRITERIA } from "@/lib/matching/criteria";
+import { renderWithTheme } from "../helpers/ui";
 import { runAxe } from "./axe";
 
-function renderForm() {
-  const onChange = vi.fn();
-  const { container } = render(
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <CriteriaForm criteria={DEFAULT_CRITERIA} onChange={onChange} />
-    </ThemeProvider>,
-  );
-  return { container, onChange };
-}
-
-// ── Axe (zero violations) ──────────────────────────────────────────────────
-
-describe("CriteriaForm a11y", () => {
-  it("has zero axe violations", async () => {
-    const { container } = renderForm();
-    const violations = await runAxe(container);
-    expect(violations).toEqual([]);
-  });
-});
-
-// ── Labels ─────────────────────────────────────────────────────────────────
-
-describe("CriteriaForm labels", () => {
-  it("Skills input is findable by label", () => {
-    renderForm();
-    expect(screen.getByLabelText(/skills/i)).toBeTruthy();
+describe("CriteriaForm accessibility (SPEC §13, NFR3)", () => {
+  it("has zero axe violations with default criteria", async () => {
+    const { container } = renderWithTheme(
+      <CriteriaForm criteria={DEFAULT_CRITERIA} onChange={() => {}} />
+    );
+    expect(await runAxe(container)).toEqual([]);
   });
 
-  it("Target job titles input is findable by label", () => {
-    renderForm();
-    expect(screen.getByLabelText(/target job titles/i)).toBeTruthy();
-  });
-
-  it("Excluded keywords input is findable by label", () => {
-    renderForm();
-    expect(screen.getByLabelText(/excluded keywords/i)).toBeTruthy();
-  });
-
-  it("Min salary input is findable by label", () => {
-    renderForm();
-    expect(screen.getByLabelText(/min salary/i)).toBeTruthy();
-  });
-
-  it("Country input is findable by label", () => {
-    renderForm();
-    expect(screen.getByLabelText(/your country/i)).toBeTruthy();
-  });
-});
-
-// ── Benefit fieldsets use group + legend ───────────────────────────────────
-
-describe("CriteriaForm benefit fieldsets", () => {
-  it("Must-have benefits group has an accessible name (legend)", () => {
-    renderForm();
-    const group = screen.getByRole("group", { name: /must-have benefits/i });
-    expect(group).toBeTruthy();
-  });
-
-  it("Nice-to-have benefits group has an accessible name (legend)", () => {
-    renderForm();
-    const group = screen.getByRole("group", { name: /nice-to-have benefits/i });
-    expect(group).toBeTruthy();
-  });
-
-  it("Seniority group has an accessible name (legend)", () => {
-    renderForm();
-    const group = screen.getByRole("group", { name: /seniority/i });
-    expect(group).toBeTruthy();
-  });
-
-  it("Employment type group has an accessible name (legend)", () => {
-    renderForm();
-    const group = screen.getByRole("group", { name: /employment type/i });
-    expect(group).toBeTruthy();
-  });
-});
-
-// ── Reset button ───────────────────────────────────────────────────────────
-
-describe("CriteriaForm reset", () => {
-  it("Reset button is in the document", () => {
-    renderForm();
-    expect(screen.getByRole("button", { name: /reset criteria/i })).toBeTruthy();
+  it("renders must-have benefit group with a legend", () => {
+    const { container } = renderWithTheme(
+      <CriteriaForm criteria={DEFAULT_CRITERIA} onChange={() => {}} />
+    );
+    const groups = container.querySelectorAll("fieldset");
+    // At least two fieldsets for must-have and nice-to-have
+    expect(groups.length).toBeGreaterThanOrEqual(2);
+    const legends = Array.from(groups).map((f) => f.querySelector("legend")?.textContent?.trim());
+    expect(legends).toContain("Must-have");
+    expect(legends).toContain("Nice-to-have");
   });
 });

@@ -1,47 +1,19 @@
 # Integration Test Instructions
 
-**Intent:** 261117-job-matcher-mvp  
-**Date:** 2026-11-17  
-**Strategy:** Minimal (scope: express)
+**Scope:** express — Minimal strategy. No integration test floor beyond the existing route tests.
 
-## Automated integration tests (already in suite)
+The `/api/jobs` and `/api/parse-cv` route tests in `tests/route.jobs.test.ts` cover the integration boundary between the aggregation layer and the HTTP layer. They run as part of `npm test`.
 
-The following test files exercise integration boundaries without network calls
-(adapters tested against recorded fixtures via `vi.stubGlobal("fetch", ...)`):
-
-| Test file | Integration boundary tested |
-|---|---|
-| `aggregate.test.ts` | Sources → dedupe → sort pipeline |
-| `route.jobs.test.ts` | Aggregator → HTTP route handler |
-| `sources.himalayas.test.ts` | Zod schema → normalization → `Job` shape |
-| `sources.remotive.test.ts` | Zod schema → normalization → `Job` shape |
-
-## Manual integration check (dev server)
+Manual integration check (run once after `npm run dev`):
 
 ```bash
-cd web && npm run dev
+# Verify both sources respond
+curl "http://localhost:3000/api/jobs" | jq '.sources'
 
-# Verify full pipeline — both sources, dedupe, cache
-curl http://localhost:3000/api/jobs | python3 -m json.tool | head -30
+# Verify search filtering
+curl "http://localhost:3000/api/jobs?q=react" | jq '{count: (.jobs | length)}'
 
-# Verify q= search upstream
-curl "http://localhost:3000/api/jobs?q=react" | python3 -m json.tool | head -20
-
-# Verify second call is cached
-curl http://localhost:3000/api/jobs | python3 -m json.tool | grep '"cached"'
+# Verify CV parse endpoint
+curl -X POST http://localhost:3000/api/parse-cv \
+  -F "file=@/path/to/your-cv.pdf" | jq '{skills: .keywords[:5]}'
 ```
-
-Expected: `"cached": true` on second call within the 6 h TTL window.
-
-## End-to-end demo walkthrough
-
-1. Open http://localhost:3000
-2. Type "react" in Skills → chips appear, cards re-rank
-3. Set Min salary 100000 USD → low-salary cards disappear into "excluded"
-4. Click "Show excluded (n)" → excluded cards listed with reason
-5. Click any card → detail panel opens, score breakdown shows factor table
-6. Click Apply → official job URL opens in new tab
-7. Press Escape → panel closes, focus returns to card
-8. Click "Scan CV" → upload a PDF/DOCX → preview dialog
-9. Confirm CV items → criteria updated
-10. Click Reset criteria → confirm dialog → all fields clear

@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // cacheComponents + partialPrefetching are Next.js 16 experimental flags.
-  // cacheComponents conflicts with our API route segment configs (runtime/dynamic),
-  // and partialPrefetching requires cacheComponents. Neither is needed for this PoC.
+  /* config options here */
+  cacheComponents: true,
+  partialPrefetching: true,
+  // pdf-parse reads test files at require() time; bundling it breaks that.
+  // Marking it external tells Next.js to leave it as a plain Node require.
+  serverExternalPackages: ["pdf-parse"],
 };
 
 export default nextConfig;

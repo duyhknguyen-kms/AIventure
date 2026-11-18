@@ -1,124 +1,127 @@
-/**
- * §5.2 — Remotive source adapter
- * Fetches the full public feed once per cache window and normalizes to Job[].
- * Never passes `search` upstream — q-filtering is applied locally by the aggregator.
- */
 import { z } from "zod";
-import type { Job, SourceName } from "@/lib/types";
 import { parseSalaryText } from "@/lib/matching/salary";
 import { normalizeEmploymentType } from "@/lib/normalize/employment";
-import { inferSeniorityFromTitle } from "@/lib/normalize/seniority";
 import { stripHtml } from "@/lib/normalize/html";
 import { parseRemotiveLocation } from "@/lib/normalize/location";
-import { REMOTIVE_URL } from "@/lib/config";
+import { inferSeniorityFromTitle } from "@/lib/normalize/seniority";
+import type { Job } from "@/lib/types";
+import { UpstreamError, fetchJson, isHttpUrl } from "./http";
 
-// ── Zod schema ────────────────────────────────────────────────────────────
+/**
+ * Remotive adapter (SPEC §5.2, mapping §4.2, FR1.2, FR2).
+ *
+ * Remotive asks for at most 4 requests per day, so the full feed is fetched
+ * once per cache window without `search` or `limit`; queries are applied
+ * locally by the aggregator (SPEC §5.3).
+ */
 
-const RemotiveJobSchema = z
+export const REMOTIVE_URL = "https://remotive.com/api/remote-jobs";
+
+const HAS_OFFSET = /(?:z|[+-]\d{2}:?\d{2})$/i;
+
+/**
+ * `publication_date` has no offset (e.g. `2026-11-14T20:33:53`) and is UTC
+ * (SPEC §4.2). A value that already carries an offset is used as is.
+ * Returns null when the value is not a date.
+ */
+export function remotiveDateToIso(value: string): string | null {
+  const text = value.trim();
+  if (text.length === 0) return null;
+  const time = Date.parse(HAS_OFFSET.test(text) ? text : `${text}Z`);
+  return Number.isNaN(time) ? null : new Date(time).toISOString();
+}
+
+export const RemotiveJobSchema = z
   .object({
-    id: z.number(),
-    url: z.string(),
-    title: z.string(),
-    company_name: z.string(),
+    id: z.union([z.number().int(), z.string().trim().min(1)]),
+    url: z.string().trim().refine(isHttpUrl, "must be an http(s) URL"),
+    title: z.string().trim().min(1),
+    company_name: z.string().trim().min(1),
+    publication_date: z.string().refine((v) => remotiveDateToIso(v) !== null, "must be a date"),
     company_logo: z.string().nullish(),
-    company_logo_url: z.string().nullish(),
     category: z.string().nullish(),
     tags: z.array(z.string()).nullish(),
     job_type: z.string().nullish(),
-    publication_date: z.string(),          // ISO without TZ offset, e.g. "2026-11-14T20:33:53"
     candidate_required_location: z.string().nullish(),
-    salary: z.string().nullish(),           // free text
+    salary: z.string().nullish(),
     description: z.string().nullish(),
   })
   .passthrough();
 
-const RemotiveResponseSchema = z.object({
-  "job-count": z.number().nullish(),
-  "total-job-count": z.number().nullish(),
-  jobs: z.array(z.unknown()),
-});
+export type RemotiveJob = z.infer<typeof RemotiveJobSchema>;
 
-// ── toJob ─────────────────────────────────────────────────────────────────
+/** Response envelope; jobs are validated one by one so a bad job is skipped, not fatal. */
+export const RemotiveResponseSchema = z
+  .object({
+    jobs: z.array(z.unknown()),
+    "job-count": z.number().nullish(),
+    "total-job-count": z.number().nullish(),
+  })
+  .passthrough();
 
-function toJob(raw: z.infer<typeof RemotiveJobSchema>): Job {
-  const source: SourceName = "remotive";
-  const sourceId = String(raw.id);
-
-  const descriptionHtml = raw.description ?? "";
-  const descriptionText = stripHtml(descriptionHtml);
-
-  // Salary: free-text parsed
-  const salary = parseSalaryText(raw.salary);
-
-  // Location: free-text parsed
-  const location = parseRemotiveLocation(raw.candidate_required_location);
-
-  // publication_date has no TZ offset — treat as UTC
-  const publishedAt = new Date(raw.publication_date + "Z").toISOString();
-
+/** Maps one validated Remotive job to the normalized `Job` (SPEC §4.2). */
+export function toJob(job: RemotiveJob): Job {
+  const sourceId = String(job.id);
+  const descriptionHtml = job.description ?? "";
+  const logo = typeof job.company_logo === "string" && isHttpUrl(job.company_logo) ? job.company_logo : null;
+  const category = job.category?.trim();
   return {
-    id: `${source}:${sourceId}`,
-    source,
+    id: `remotive:${sourceId}`,
+    source: "remotive",
     sourceId,
-    title: raw.title,
-    company: raw.company_name,
-    companyLogo: raw.company_logo_url ?? raw.company_logo ?? null,
-    applyUrl: raw.url,
-    sourceUrl: raw.url,
-    employmentType: normalizeEmploymentType(raw.job_type),
-    seniority: inferSeniorityFromTitle(raw.title),
-    salary,
-    location,
-    timezones: null,                        // Remotive doesn't provide timezone data
-    categories: raw.category ? [raw.category] : [],
-    tags: raw.tags ?? [],
+    title: job.title,
+    company: job.company_name,
+    companyLogo: logo,
+    applyUrl: job.url,
+    sourceUrl: job.url,
+    employmentType: normalizeEmploymentType(job.job_type),
+    seniority: inferSeniorityFromTitle(job.title),
+    salary: parseSalaryText(job.salary),
+    location: parseRemotiveLocation(job.candidate_required_location),
+    timezones: null,
+    categories: category ? [category] : [],
+    tags: job.tags ?? [],
     excerpt: null,
     descriptionHtml,
-    descriptionText,
-    publishedAt,
+    descriptionText: stripHtml(descriptionHtml),
+    // Validated by the schema refinement, so this is never null here.
+    publishedAt: remotiveDateToIso(job.publication_date) ?? new Date(0).toISOString(),
     expiresAt: null,
     alsoOn: [],
   };
 }
 
-// ── Public API ────────────────────────────────────────────────────────────
-
-export interface FetchRemotiveResult {
-  jobs: Job[];
-  skipped: number;
+/** Validates a response body; throws only when the envelope itself is wrong. */
+export function parseRemotiveResponse(body: unknown): { jobs: Job[]; skipped: number } {
+  const envelope = RemotiveResponseSchema.safeParse(body);
+  if (!envelope.success) {
+    throw new UpstreamError("remotive", "Unexpected response shape");
+  }
+  const jobs: Job[] = [];
+  const seen = new Set<string>();
+  let skipped = 0;
+  for (const raw of envelope.data.jobs) {
+    const parsed = RemotiveJobSchema.safeParse(raw);
+    if (!parsed.success) {
+      skipped += 1;
+      continue;
+    }
+    const job = toJob(parsed.data);
+    if (!seen.has(job.id)) {
+      seen.add(job.id);
+      jobs.push(job);
+    }
+  }
+  return { jobs, skipped };
 }
 
 /**
- * Fetch the full Remotive public feed.
- * Invalid jobs are skipped and counted, never thrown.
- * Throws on HTTP 4xx/5xx or network failure.
+ * Fetches the full Remotive feed with one request (SPEC §5.2). Throws
+ * `UpstreamError` on network, HTTP (429 carries `retryAfterSeconds`) or
+ * envelope errors; invalid jobs are skipped and counted in a log line.
  */
-export async function fetchRemotive(): Promise<FetchRemotiveResult> {
-  const res = await fetch(REMOTIVE_URL, {
-    signal: AbortSignal.timeout(10_000),
-  });
-
-  if (!res.ok) {
-    throw { type: "http" as const, status: res.status };
-  }
-
-  const data = RemotiveResponseSchema.parse(await res.json());
-
-  let skipped = 0;
-  const jobs: Job[] = [];
-
-  for (const item of data.jobs) {
-    const result = RemotiveJobSchema.safeParse(item);
-    if (result.success) {
-      jobs.push(toJob(result.data));
-    } else {
-      skipped++;
-    }
-  }
-
-  if (skipped > 0) {
-    console.warn(`[remotive] skipped ${skipped} invalid jobs`);
-  }
-
-  return { jobs, skipped };
+export async function fetchRemotive(): Promise<Job[]> {
+  const { jobs, skipped } = parseRemotiveResponse(await fetchJson("remotive", REMOTIVE_URL));
+  if (skipped > 0) console.warn(`[remotive] skipped ${skipped} invalid job(s)`);
+  return jobs;
 }

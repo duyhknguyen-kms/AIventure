@@ -1,14 +1,6 @@
 "use client";
-/**
- * §10.3 — CriteriaForm
- * Every control has a visible label; groups use fieldset+legend (WCAG 1.3.1).
- * "Reset" restores DEFAULT_CRITERIA after a confirm Dialog.
- */
-import { type SyntheticEvent, useState } from "react";
-import Autocomplete, {
-  type AutocompleteChangeReason,
-  type AutocompleteRenderInputParams,
-} from "@mui/material/Autocomplete";
+
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
@@ -22,393 +14,561 @@ import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
 import FormLabel from "@mui/material/FormLabel";
-import InputLabel from "@mui/material/InputLabel";
+import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import CvScanner from "./CvScanner";
-import { DEFAULT_CRITERIA, type Criteria } from "@/lib/matching/criteria";
-import type { BenefitKey, Seniority, EmploymentType } from "@/lib/types";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { BENEFIT_DICTIONARY } from "@/lib/matching/benefits";
+import { DEFAULT_CRITERIA, type Criteria, type BenefitKey } from "@/lib/matching/criteria";
 
-// ── Static option lists ────────────────────────────────────────────────────
-
-const SENIORITY_OPTIONS: { value: Seniority; label: string }[] = [
-  { value: "entry",     label: "Entry-level" },
-  { value: "mid",       label: "Mid-level" },
-  { value: "senior",    label: "Senior" },
-  { value: "manager",   label: "Manager" },
-  { value: "director",  label: "Director" },
-  { value: "executive", label: "Executive" },
-];
-
-const EMPLOYMENT_OPTIONS: { value: EmploymentType; label: string }[] = [
-  { value: "full_time",  label: "Full-time" },
-  { value: "part_time",  label: "Part-time" },
-  { value: "contract",   label: "Contract" },
-  { value: "temporary",  label: "Temporary" },
-  { value: "internship", label: "Internship" },
-];
-
-const BENEFIT_OPTIONS: { key: BenefitKey; label: string }[] = [
-  { key: "health",         label: "Health / Medical" },
-  { key: "retirement",     label: "Retirement" },
-  { key: "equity",         label: "Equity" },
-  { key: "pto",            label: "Paid time off" },
-  { key: "parental_leave", label: "Parental leave" },
-  { key: "learning",       label: "Learning budget" },
-  { key: "home_office",    label: "Home-office stipend" },
-  { key: "flexible_hours", label: "Flexible hours" },
-  { key: "wellness",       label: "Wellness" },
-];
-
-const CURRENCY_OPTIONS = ["USD", "EUR", "GBP", "CAD", "AUD", "SGD", "INR"];
-
-const COUNTRY_OPTIONS = [
-  { code: "AU", label: "Australia" },
-  { code: "BR", label: "Brazil" },
-  { code: "CA", label: "Canada" },
-  { code: "DE", label: "Germany" },
-  { code: "FR", label: "France" },
-  { code: "GB", label: "United Kingdom" },
-  { code: "IN", label: "India" },
-  { code: "NL", label: "Netherlands" },
-  { code: "NG", label: "Nigeria" },
-  { code: "PH", label: "Philippines" },
-  { code: "PL", label: "Poland" },
-  { code: "PT", label: "Portugal" },
-  { code: "SG", label: "Singapore" },
-  { code: "US", label: "United States" },
-  { code: "VN", label: "Vietnam" },
-  { code: "ZA", label: "South Africa" },
-];
-
-/** Sentinel string for "no timezone selected" in the Select. */
-const TZ_NONE = "__none__";
-
-const TZ_OPTIONS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
-  value: String(h),
-  numericValue: h,
-  label: `UTC${h >= 0 ? "+" : ""}${h}`,
-}));
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function toggle<T>(arr: T[], value: T): T[] {
-  return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
-}
-
-/** Extract only string values from freeSolo Autocomplete onChange. */
-function stringsOnly(v: (string | null | undefined)[]): string[] {
-  return v.filter((x): x is string => typeof x === "string");
-}
-
-// ── Shared chip Autocomplete ───────────────────────────────────────────────
-
-interface ChipAutocompleteProps {
-  id: string;
-  label: string;
-  helperText: string;
-  value: string[];
-  onChange: (next: string[]) => void;
-  chipColor?: "default" | "error";
-}
-
-function ChipAutocomplete({ id, label, helperText, value, onChange, chipColor = "default" }: ChipAutocompleteProps) {
-  return (
-    <Autocomplete<string, true, false, true>
-      multiple
-      freeSolo
-      id={id}
-      options={[] as string[]}
-      value={value}
-      onChange={(_: SyntheticEvent, v: (string | null | undefined)[], _reason: AutocompleteChangeReason) =>
-        onChange(stringsOnly(v))
-      }
-      renderValue={(values: (string | null | undefined)[], getItemProps) =>
-        (values as string[]).map((option: string, index: number) => {
-          const { key, ...itemProps } = getItemProps({ index });
-          return (
-            <Chip
-              key={key ?? option + index}
-              label={option}
-              size="small"
-              color={chipColor}
-              variant={chipColor === "error" ? "outlined" : "filled"}
-              {...itemProps}
-            />
-          );
-        })
-      }
-      renderInput={(params: AutocompleteRenderInputParams) => (
-        <TextField {...params} label={label} helperText={helperText} />
-      )}
-    />
-  );
-}
-
-// ── Component ──────────────────────────────────────────────────────────────
-
-interface Props {
+export interface CriteriaFormProps {
   criteria: Criteria;
   onChange: (next: Criteria) => void;
 }
 
-export default function CriteriaForm({ criteria, onChange }: Props) {
-  const [resetOpen, setResetOpen] = useState(false);
-  const [salaryError, setSalaryError] = useState("");
+// Seniority / employment type definitions ------------------------------------------------
 
-  const set = <K extends keyof Criteria>(key: K, value: Criteria[K]) =>
-    onChange({ ...criteria, [key]: value });
+const SENIORITY_OPTIONS: { value: Criteria["seniority"][0]; label: string }[] = [
+  { value: "entry", label: "Entry level" },
+  { value: "mid", label: "Mid level" },
+  { value: "senior", label: "Senior" },
+  { value: "manager", label: "Manager" },
+  { value: "director", label: "Director" },
+  { value: "executive", label: "Executive" },
+];
+
+const EMPLOYMENT_OPTIONS: { value: Criteria["employmentTypes"][0]; label: string }[] = [
+  { value: "full_time", label: "Full time" },
+  { value: "part_time", label: "Part time" },
+  { value: "contract", label: "Contract" },
+  { value: "temporary", label: "Temporary" },
+  { value: "internship", label: "Internship" },
+  { value: "other", label: "Other" },
+];
+
+// Country list (abbreviated for MVP; covers most popular remote-work countries) ----------
+const COUNTRY_OPTIONS: { code: string; label: string }[] = [
+  { code: "US", label: "United States" },
+  { code: "GB", label: "United Kingdom" },
+  { code: "CA", label: "Canada" },
+  { code: "AU", label: "Australia" },
+  { code: "DE", label: "Germany" },
+  { code: "FR", label: "France" },
+  { code: "NL", label: "Netherlands" },
+  { code: "SE", label: "Sweden" },
+  { code: "NO", label: "Norway" },
+  { code: "DK", label: "Denmark" },
+  { code: "FI", label: "Finland" },
+  { code: "CH", label: "Switzerland" },
+  { code: "AT", label: "Austria" },
+  { code: "BE", label: "Belgium" },
+  { code: "IE", label: "Ireland" },
+  { code: "NZ", label: "New Zealand" },
+  { code: "SG", label: "Singapore" },
+  { code: "IN", label: "India" },
+  { code: "BR", label: "Brazil" },
+  { code: "PL", label: "Poland" },
+  { code: "PT", label: "Portugal" },
+  { code: "ES", label: "Spain" },
+  { code: "IT", label: "Italy" },
+  { code: "JP", label: "Japan" },
+  { code: "KR", label: "South Korea" },
+  { code: "MX", label: "Mexico" },
+  { code: "AR", label: "Argentina" },
+  { code: "CO", label: "Colombia" },
+  { code: "ZA", label: "South Africa" },
+  { code: "UA", label: "Ukraine" },
+  { code: "RO", label: "Romania" },
+  { code: "CZ", label: "Czech Republic" },
+  { code: "HU", label: "Hungary" },
+  { code: "TR", label: "Turkey" },
+  { code: "IL", label: "Israel" },
+  { code: "VN", label: "Vietnam" },
+  { code: "TH", label: "Thailand" },
+  { code: "PH", label: "Philippines" },
+  { code: "ID", label: "Indonesia" },
+  { code: "EG", label: "Egypt" },
+  { code: "NG", label: "Nigeria" },
+].sort((a, b) => a.label.localeCompare(b.label));
+
+// Timezone options: -12 to +14 in 0.5h steps -------------------------------------------
+const TIMEZONE_OPTIONS: { value: number; label: string }[] = Array.from(
+  { length: (14 + 12) * 2 + 1 },
+  (_, i) => {
+    const offset = -12 + i * 0.5;
+    const sign = offset >= 0 ? "+" : "−";
+    const abs = Math.abs(offset);
+    const h = Math.floor(abs);
+    const m = abs % 1 === 0 ? "00" : "30";
+    return { value: offset, label: `UTC ${sign}${h}:${m}` };
+  },
+);
+
+// Currency options -----------------------------------------------------------------------
+const CURRENCY_OPTIONS = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "SGD", "JPY", "CHF", "NZD"];
+
+// Section wrapper -------------------------------------------------------------------------
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ mb: 2.5 }}>
+      <Typography
+        variant="overline"
+        component="p"
+        sx={{ color: "primary.main", fontWeight: 700, letterSpacing: "0.08em", mb: 1, fontSize: "0.68rem" }}
+      >
+        {title}
+      </Typography>
+      {children}
+    </Box>
+  );
+}
+
+function ChipInput({
+  id,
+  label,
+  helperText,
+  values,
+  max,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  helperText?: string;
+  values: readonly string[];
+  max: number;
+  onChange: (next: string[]) => void;
+}) {
+  const [input, setInput] = useState("");
+  const inputId = `${id}-input`;
+
+  const addValue = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed || values.includes(trimmed) || values.length >= max) return;
+    onChange([...values, trimmed]);
+    setInput("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addValue(input);
+    } else if (e.key === "Backspace" && input === "" && values.length > 0) {
+      onChange([...values].slice(0, -1));
+    }
+  };
 
   return (
-    <Stack spacing={3} component="form" noValidate aria-label="Job criteria">
-      <Typography variant="h6" component="h2">
-        Criteria
+    <Box>
+      <Typography
+        component="label"
+        htmlFor={inputId}
+        variant="body2"
+        sx={{ fontWeight: 600, fontSize: "0.82rem", color: "text.primary", display: "block", mb: 0.5 }}
+      >
+        {label}
       </Typography>
-
-      {/* CV scanner — auto-fills skills, titles, seniority */}
-      <CvScanner criteria={criteria} onChange={onChange} />
-
-      {/* Skills */}
-      <ChipAutocomplete
-        id="criteria-keywords"
-        label="Skills / keywords"
-        helperText="e.g. react, typescript — press Enter to add"
-        value={criteria.keywords}
-        onChange={(v) => set("keywords", v)}
-      />
-
-      {/* Target titles */}
-      <ChipAutocomplete
-        id="criteria-titles"
-        label="Target job titles"
-        helperText="e.g. frontend engineer — press Enter to add"
-        value={criteria.targetTitles}
-        onChange={(v) => set("targetTitles", v)}
-      />
-
-      {/* Excluded keywords */}
-      <ChipAutocomplete
-        id="criteria-excluded"
-        label="Excluded keywords"
-        helperText="Jobs containing these are hidden — e.g. php, on-site"
-        value={criteria.excludedKeywords}
-        onChange={(v) => set("excludedKeywords", v)}
-        chipColor="error"
-      />
-
-      <Divider />
-
-      {/* Seniority */}
-      <FormControl component="fieldset">
-        <FormLabel component="legend">Seniority</FormLabel>
-        <FormGroup row>
-          {SENIORITY_OPTIONS.map(({ value, label }) => (
-            <FormControlLabel
-              key={value}
-              control={
-                <Checkbox
-                  checked={criteria.seniority.includes(value)}
-                  onChange={() => set("seniority", toggle(criteria.seniority, value))}
-                  size="small"
-                />
-              }
-              label={label}
-            />
-          ))}
-        </FormGroup>
-      </FormControl>
-
-      {/* Employment type */}
-      <FormControl component="fieldset">
-        <FormLabel component="legend">Employment type</FormLabel>
-        <FormGroup row>
-          {EMPLOYMENT_OPTIONS.map(({ value, label }) => (
-            <FormControlLabel
-              key={value}
-              control={
-                <Checkbox
-                  checked={criteria.employmentTypes.includes(value)}
-                  onChange={() => set("employmentTypes", toggle(criteria.employmentTypes, value))}
-                  size="small"
-                />
-              }
-              label={label}
-            />
-          ))}
-        </FormGroup>
-      </FormControl>
-
-      <Divider />
-
-      {/* Minimum salary */}
-      <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
-        <TextField
-          id="criteria-salary"
-          label="Min salary (annual)"
-          type="number"
-          size="small"
-          value={criteria.minSalary?.amount ?? ""}
-          error={!!salaryError}
-          helperText={salaryError || "Annual amount, e.g. 100000"}
-          sx={{ flex: 1 }}
-          slotProps={{ htmlInput: { min: 0 } }}
-          onChange={(e) => {
-            const raw = e.target.value;
-            if (!raw) {
-              setSalaryError("");
-              set("minSalary", null);
-              return;
-            }
-            const n = Number(raw);
-            if (n <= 0) {
-              setSalaryError("Must be a positive number");
-              return;
-            }
-            setSalaryError("");
-            set("minSalary", { amount: n, currency: criteria.minSalary?.currency ?? "USD" });
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 0.5,
+          p: 1,
+          border: "1px solid",
+          borderColor: "#767676",
+          borderRadius: 2.5,
+          minHeight: 44,
+          cursor: "text",
+          "&:focus-within": { borderColor: "primary.main", boxShadow: "0 0 0 3px rgba(26,86,219,0.15)" },
+        }}
+        onClick={() => document.getElementById(inputId)?.focus()}
+      >
+        {values.map((v) => (
+          <Chip
+            key={v}
+            label={v}
+            size="small"
+            onDelete={() => onChange(values.filter((x) => x !== v))}
+            sx={{ borderRadius: 1.5, fontWeight: 500 }}
+          />
+        ))}
+        <Box
+          component="input"
+          id={inputId}
+          value={input}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={() => addValue(input)}
+          placeholder={values.length === 0 ? "Press Enter to add" : ""}
+          aria-describedby={`${id}-helper`}
+          sx={{
+            border: "none",
+            outline: "none",
+            bgcolor: "transparent",
+            flex: 1,
+            minWidth: 100,
+            fontSize: "0.875rem",
+            lineHeight: "1.4375em",
+            py: 0.25,
+            fontFamily: "inherit",
           }}
         />
-        <FormControl size="small" sx={{ minWidth: 90 }}>
-          <InputLabel id="salary-currency-label">Currency</InputLabel>
-          <Select
-            labelId="salary-currency-label"
-            id="salary-currency"
-            value={criteria.minSalary?.currency ?? "USD"}
-            label="Currency"
+      </Box>
+      <Typography variant="caption" id={`${id}-helper`} color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+        {helperText ?? `Press Enter to add · max ${max}`}
+      </Typography>
+    </Box>
+  );
+}
+
+// Multi-select helpers --------------------------------------------------------------------
+function toggleItem<T>(list: readonly T[], item: T): T[] {
+  return list.includes(item) ? list.filter((v) => v !== item) : [...list, item];
+}
+
+/**
+ * CriteriaForm: all SPEC §6 criteria fields (SPEC §10.3, FR5.1). MUI only,
+ * WCAG 2.2 AA labelling, modern card-section layout.
+ */
+export function CriteriaForm({ criteria, onChange }: CriteriaFormProps) {
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+
+  const patch = <K extends keyof Criteria>(key: K, value: Criteria[K]) =>
+    onChange({ ...criteria, [key]: value });
+
+  const handleReset = () => {
+    setResetDialogOpen(false);
+    onChange(DEFAULT_CRITERIA);
+  };
+
+  return (
+    <Box component="form" noValidate aria-label="Criteria" data-testid="criteria-form">
+      {/* Keywords */}
+      <FormSection title="Skills & Keywords">
+        <Stack spacing={1.5}>
+          <ChipInput
+            id="cf-keywords"
+            label="Skills / keywords"
+            values={criteria.keywords}
+            max={30}
+            onChange={(v) => patch("keywords", v)}
+          />
+          <ChipInput
+            id="cf-titles"
+            label="Target job titles"
+            values={criteria.targetTitles}
+            max={10}
+            onChange={(v) => patch("targetTitles", v)}
+          />
+          <ChipInput
+            id="cf-excluded"
+            label="Excluded keywords"
+            helperText="Jobs containing these are hidden"
+            values={criteria.excludedKeywords}
+            max={30}
+            onChange={(v) => patch("excludedKeywords", v)}
+          />
+        </Stack>
+      </FormSection>
+
+      <Divider sx={{ my: 1.5 }} />
+
+      {/* Role */}
+      <FormSection title="Role">
+        <Stack spacing={1.5}>
+          <FormControl size="small" fullWidth>
+            <FormLabel
+              component="label"
+              id="cf-seniority-label"
+              sx={{ mb: 0.5, fontSize: "0.82rem", fontWeight: 600, color: "text.primary" }}
+            >
+              Seniority
+            </FormLabel>
+            <Select
+              id="cf-seniority"
+              labelId="cf-seniority-label"
+              multiple
+              value={criteria.seniority}
+              onChange={(e) => patch("seniority", e.target.value as Criteria["seniority"])}
+              renderValue={(selected) =>
+                selected.length === 0
+                  ? "Any"
+                  : selected
+                      .map((v) => SENIORITY_OPTIONS.find((o) => o.value === v)?.label ?? v)
+                      .join(", ")
+              }
+              displayEmpty
+              data-testid="cf-seniority"
+            >
+              {SENIORITY_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  <Checkbox size="small" checked={criteria.seniority.includes(opt.value)} />
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" fullWidth>
+            <FormLabel
+              component="label"
+              id="cf-employment-label"
+              sx={{ mb: 0.5, fontSize: "0.82rem", fontWeight: 600, color: "text.primary" }}
+            >
+              Employment type
+            </FormLabel>
+            <Select
+              id="cf-employment"
+              labelId="cf-employment-label"
+              multiple
+              value={criteria.employmentTypes}
+              onChange={(e) => patch("employmentTypes", e.target.value as Criteria["employmentTypes"])}
+              renderValue={(selected) =>
+                selected.length === 0
+                  ? "Any"
+                  : selected
+                      .map((v) => EMPLOYMENT_OPTIONS.find((o) => o.value === v)?.label ?? v)
+                      .join(", ")
+              }
+              displayEmpty
+              data-testid="cf-employment"
+            >
+              {EMPLOYMENT_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  <Checkbox size="small" checked={criteria.employmentTypes.includes(opt.value)} />
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+      </FormSection>
+
+      <Divider sx={{ my: 1.5 }} />
+
+      {/* Salary */}
+      <FormSection title="Salary">
+        <Stack direction="row" spacing={1}>
+          <TextField
+            id="cf-salary-amount"
+            label="Min salary"
+            type="number"
+            size="small"
+            value={criteria.minSalary?.amount ?? ""}
             onChange={(e) => {
-              if (criteria.minSalary) {
-                set("minSalary", { ...criteria.minSalary, currency: e.target.value });
+              const raw = e.target.value;
+              if (raw === "") {
+                patch("minSalary", null);
+              } else {
+                const amount = Number(raw);
+                if (amount > 0)
+                  patch("minSalary", {
+                    amount,
+                    currency: criteria.minSalary?.currency ?? "USD",
+                  });
               }
             }}
-          >
-            {CURRENCY_OPTIONS.map((c) => (
-              <MenuItem key={c} value={c}>{c}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Stack>
-
-      {/* Country */}
-      <Autocomplete<{ code: string; label: string }, false, false, false>
-        id="criteria-country"
-        options={COUNTRY_OPTIONS}
-        getOptionLabel={(o) => o.label}
-        isOptionEqualToValue={(o, v) => o.code === v.code}
-        value={COUNTRY_OPTIONS.find((c) => c.code === criteria.country) ?? null}
-        onChange={(_, v) => set("country", v?.code ?? null)}
-        renderInput={(params: AutocompleteRenderInputParams) => (
-          <TextField
-            {...params}
-            label="Your country"
-            helperText="Used to filter location-restricted jobs"
-            slotProps={{ htmlInput: { ...params.slotProps.htmlInput, autoComplete: "country" } }}
+            slotProps={{ htmlInput: { min: 0, "data-testid": "cf-salary-amount", "aria-label": "Minimum annual salary" } }}
+            sx={{ flex: 2 }}
           />
-        )}
-      />
+          <FormControl size="small" sx={{ flex: 1 }}>
+            <Select
+              id="cf-salary-currency"
+              value={criteria.minSalary?.currency ?? "USD"}
+              onChange={(e) => {
+                if (criteria.minSalary)
+                  patch("minSalary", { ...criteria.minSalary, currency: e.target.value });
+              }}
+              inputProps={{ "aria-label": "Currency" }}
+              data-testid="cf-salary-currency"
+            >
+              {CURRENCY_OPTIONS.map((c) => (
+                <MenuItem key={c} value={c}>
+                  {c}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+      </FormSection>
 
-      {/* Timezone offset */}
-      <FormControl size="small" fullWidth>
-        <InputLabel id="tz-label">Your UTC offset</InputLabel>
-        <Select
-          labelId="tz-label"
-          id="criteria-tz"
-          value={criteria.timezoneOffset !== null ? String(criteria.timezoneOffset) : TZ_NONE}
-          label="Your UTC offset"
-          onChange={(e) => {
-            const v = e.target.value;
-            set("timezoneOffset", v === TZ_NONE ? null : Number(v));
-          }}
-        >
-          <MenuItem value={TZ_NONE}><em>Any timezone</em></MenuItem>
-          {TZ_OPTIONS.map(({ value, label }) => (
-            <MenuItem key={value} value={value}>{label}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <Divider sx={{ my: 1.5 }} />
 
-      <Divider />
+      {/* Location */}
+      <FormSection title="Location & Timezone">
+        <Stack spacing={1.5}>
+          <FormControl size="small" fullWidth>
+            <FormLabel
+              component="label"
+              htmlFor="cf-country"
+              sx={{ mb: 0.5, fontSize: "0.82rem", fontWeight: 600, color: "text.primary" }}
+            >
+              Your country
+            </FormLabel>
+            <Select
+              id="cf-country"
+              value={criteria.country ?? ""}
+              onChange={(e) => patch("country", e.target.value === "" ? null : e.target.value)}
+              displayEmpty
+              inputProps={{ "aria-label": "Your country" }}
+              data-testid="cf-country"
+            >
+              <MenuItem value="">Any</MenuItem>
+              {COUNTRY_OPTIONS.map((opt) => (
+                <MenuItem key={opt.code} value={opt.code}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-      {/* Must-have benefits */}
-      <FormControl component="fieldset">
-        <FormLabel component="legend">Must-have benefits</FormLabel>
-        <FormGroup>
-          {BENEFIT_OPTIONS.map(({ key, label }) => (
-            <FormControlLabel
-              key={key}
-              control={
-                <Checkbox
-                  checked={criteria.mustHaveBenefits.includes(key)}
-                  onChange={() => set("mustHaveBenefits", toggle(criteria.mustHaveBenefits, key))}
-                  size="small"
+          <FormControl size="small" fullWidth>
+            <FormLabel
+              component="label"
+              htmlFor="cf-timezone"
+              sx={{ mb: 0.5, fontSize: "0.82rem", fontWeight: 600, color: "text.primary" }}
+            >
+              Your timezone
+            </FormLabel>
+            <Select
+              id="cf-timezone"
+              value={criteria.timezoneOffset !== null ? String(criteria.timezoneOffset) : ""}
+              onChange={(e) => patch("timezoneOffset", e.target.value === "" ? null : Number(e.target.value))}
+              displayEmpty
+              inputProps={{ "aria-label": "Your timezone" }}
+              data-testid="cf-timezone"
+            >
+              <MenuItem value="">Any</MenuItem>
+              {TIMEZONE_OPTIONS.map((opt) => (
+                <MenuItem key={String(opt.value)} value={String(opt.value)}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+      </FormSection>
+
+      <Divider sx={{ my: 1.5 }} />
+
+      {/* Benefits */}
+      <FormSection title="Benefits">
+        <Stack spacing={1.5}>
+          <FormControl component="fieldset" fullWidth data-testid="cf-must-have-group">
+            <FormLabel
+              component="legend"
+              sx={{ mb: 0.5, fontSize: "0.82rem", fontWeight: 600, color: "text.primary" }}
+            >
+              Must-have
+            </FormLabel>
+            <FormGroup sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+              {BENEFIT_DICTIONARY.map((b) => (
+                <FormControlLabel
+                  key={b.key}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={criteria.mustHaveBenefits.includes(b.key as BenefitKey)}
+                      onChange={() =>
+                        patch(
+                          "mustHaveBenefits",
+                          toggleItem(criteria.mustHaveBenefits, b.key as BenefitKey),
+                        )
+                      }
+                      slotProps={{ input: { "aria-label": `${b.label} must-have` } as never }}
+                      data-testid={`cf-must-have-${b.key}`}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" sx={{ fontSize: "0.78rem" }}>
+                      {b.label}
+                    </Typography>
+                  }
+                  sx={{ m: 0 }}
                 />
-              }
-              label={label}
-            />
-          ))}
-        </FormGroup>
-      </FormControl>
+              ))}
+            </FormGroup>
+          </FormControl>
 
-      {/* Nice-to-have benefits */}
-      <FormControl component="fieldset">
-        <FormLabel component="legend">Nice-to-have benefits</FormLabel>
-        <FormGroup>
-          {BENEFIT_OPTIONS.map(({ key, label }) => (
-            <FormControlLabel
-              key={key}
-              control={
-                <Checkbox
-                  checked={criteria.niceToHaveBenefits.includes(key)}
-                  onChange={() => set("niceToHaveBenefits", toggle(criteria.niceToHaveBenefits, key))}
-                  size="small"
+          <FormControl component="fieldset" fullWidth data-testid="cf-nice-to-have-group">
+            <FormLabel
+              component="legend"
+              sx={{ mb: 0.5, fontSize: "0.82rem", fontWeight: 600, color: "text.primary" }}
+            >
+              Nice-to-have
+            </FormLabel>
+            <FormGroup sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+              {BENEFIT_DICTIONARY.map((b) => (
+                <FormControlLabel
+                  key={b.key}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={criteria.niceToHaveBenefits.includes(b.key as BenefitKey)}
+                      onChange={() =>
+                        patch(
+                          "niceToHaveBenefits",
+                          toggleItem(criteria.niceToHaveBenefits, b.key as BenefitKey),
+                        )
+                      }
+                      slotProps={{ input: { "aria-label": `${b.label} nice-to-have` } as never }}
+                      data-testid={`cf-nice-to-have-${b.key}`}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" sx={{ fontSize: "0.78rem" }}>
+                      {b.label}
+                    </Typography>
+                  }
+                  sx={{ m: 0 }}
                 />
-              }
-              label={label}
-            />
-          ))}
-        </FormGroup>
-      </FormControl>
-
-      <Divider />
+              ))}
+            </FormGroup>
+          </FormControl>
+        </Stack>
+      </FormSection>
 
       {/* Reset */}
-      <Box>
-        <Button
-          variant="outlined"
-          color="warning"
-          onClick={() => setResetOpen(true)}
-          fullWidth
-        >
-          Reset criteria
-        </Button>
-      </Box>
-
-      {/* Reset confirm dialog */}
-      <Dialog
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        aria-labelledby="reset-dialog-title"
+      <Button
+        variant="outlined"
+        color="inherit"
+        size="small"
+        startIcon={<RestartAltIcon aria-hidden="true" />}
+        onClick={() => setResetDialogOpen(true)}
+        data-testid="cf-reset-button"
+        sx={{ mt: 1, color: "text.secondary", borderColor: "divider" }}
+        fullWidth
       >
-        <DialogTitle id="reset-dialog-title">Reset all criteria?</DialogTitle>
+        Reset criteria
+      </Button>
+
+      {/* Confirm dialog */}
+      <Dialog open={resetDialogOpen} onClose={() => setResetDialogOpen(false)} data-testid="cf-reset-dialog">
+        <DialogTitle>Reset all criteria?</DialogTitle>
         <DialogContent>
-          All your skills, titles, filters and benefit preferences will be cleared.
+          <Typography variant="body2" color="text.secondary">
+            This will clear every filter and show all jobs with 100% match.
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setResetOpen(false)}>Cancel</Button>
+          <Button onClick={() => setResetDialogOpen(false)} data-testid="cf-reset-cancel">
+            Cancel
+          </Button>
           <Button
-            color="warning"
-            onClick={() => {
-              onChange(DEFAULT_CRITERIA);
-              setResetOpen(false);
-            }}
-            autoFocus
+            variant="contained"
+            color="error"
+            onClick={handleReset}
+            data-testid="cf-reset-confirm"
+            disableElevation
           >
             Reset
           </Button>
         </DialogActions>
       </Dialog>
-    </Stack>
+    </Box>
   );
 }
+
+export default CriteriaForm;

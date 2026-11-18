@@ -1,60 +1,57 @@
-/**
- * §5.4 — Job deduplication
- *
- * Key = norm(company) + "|" + norm(title).
- * On collision, keep the Himalayas record (structured salary) and push the
- * other record's {source, url} into alsoOn so both sources stay credited.
- */
 import type { Job } from "@/lib/types";
 
-const COMPANY_SUFFIXES = /\b(inc|ltd|llc|gmbh|corp|co|limited)\b\.?/gi;
+/**
+ * Cross-source deduplication (SPEC §5.4, FR3).
+ *
+ * Key = `norm(company) + "|" + norm(title)`. When a Himalayas job and a job
+ * from another source share a key, the Himalayas record is kept (its salary
+ * is structured) and the other record's `{ source, url }` goes into `alsoOn`.
+ * Jobs that collide only with jobs from their own source are all kept: they
+ * are separate listings, not cross-posts.
+ */
 
-function norm(text: string): string {
-  return text
+const COMPANY_SUFFIXES = new Set(["inc", "ltd", "llc", "gmbh"]);
+
+/** Lower-cases, strips punctuation, removes company suffixes and collapses whitespace. */
+export function norm(s: string): string {
+  return s
     .toLowerCase()
-    .replace(COMPANY_SUFFIXES, "")  // remove legal suffixes
-    .replace(/[^\w\s]/g, "")        // strip punctuation
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .split(/\s+/)
+    .filter((word) => word.length > 0 && !COMPANY_SUFFIXES.has(word))
+    .join(" ");
 }
 
-function dedupeKey(job: Job): string {
+export function dedupeKey(job: Pick<Job, "company" | "title">): string {
   return `${norm(job.company)}|${norm(job.title)}`;
 }
 
+function mergeGroup(group: readonly Job[]): Job[] {
+  const himalayas = group.filter((job) => job.source === "himalayas");
+  const others = group.filter((job) => job.source !== "himalayas");
+  if (himalayas.length === 0 || others.length === 0) return [...group];
+
+  const [primary, ...rest] = himalayas;
+  const alsoOn = [...primary.alsoOn];
+  for (const other of others) {
+    for (const link of [{ source: other.source, url: other.sourceUrl }, ...other.alsoOn]) {
+      if (!alsoOn.some((l) => l.source === link.source && l.url === link.url)) alsoOn.push(link);
+    }
+  }
+  return [{ ...primary, alsoOn }, ...rest];
+}
+
 /**
- * Deduplicate jobs across sources.
- * Himalayas records win on collision; Remotive records are credited via alsoOn.
- * Input order is preserved for non-duplicate entries.
+ * Returns a new array; input jobs are not mutated. Output keeps the order of
+ * each key's first appearance (the aggregator sorts afterwards).
  */
-export function dedupeJobs(jobs: Job[]): Job[] {
-  // Separate by source so Himalayas always wins
-  const himalayas = jobs.filter((j) => j.source === "himalayas");
-  const others    = jobs.filter((j) => j.source !== "himalayas");
-
-  const seen = new Map<string, Job>();
-
-  // Index Himalayas records first
-  for (const job of himalayas) {
+export function dedupeJobs(jobs: readonly Job[]): Job[] {
+  const groups = new Map<string, Job[]>();
+  for (const job of jobs) {
     const key = dedupeKey(job);
-    if (!seen.has(key)) {
-      seen.set(key, { ...job, alsoOn: [...job.alsoOn] });
-    }
+    const group = groups.get(key);
+    if (group) group.push(job);
+    else groups.set(key, [job]);
   }
-
-  // Merge other sources
-  for (const job of others) {
-    const key = dedupeKey(job);
-    if (seen.has(key)) {
-      // Collision — credit the other source
-      const winner = seen.get(key)!;
-      if (!winner.alsoOn.some((a) => a.source === job.source)) {
-        winner.alsoOn.push({ source: job.source, url: job.sourceUrl });
-      }
-    } else {
-      seen.set(key, { ...job, alsoOn: [...job.alsoOn] });
-    }
-  }
-
-  return Array.from(seen.values());
+  return [...groups.values()].flatMap(mergeGroup);
 }

@@ -1,92 +1,153 @@
 "use client";
-/**
- * §10.3 — ScoreBreakdown
- * Table with one row per scoring factor.
- * Inactive factors show "not set", not just a grey style (§10.5).
- */
+
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
+import TableFooter from "@mui/material/TableFooter";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-import type { FactorResult } from "@/lib/types";
+import { matchLevel } from "@/lib/format";
+import type { FactorResult, MatchResult } from "@/lib/types";
 
-const FACTOR_LABELS: Record<string, string> = {
-  skills:     "Skills",
-  title:      "Job title",
-  seniority:  "Seniority",
-  salary:     "Salary",
-  employment: "Employment type",
-  timezone:   "Timezone",
-  benefits:   "Benefits",
+const FACTOR_LABEL: Readonly<Record<string, string>> = {
+  skills: "Skills",
+  title: "Title",
+  seniority: "Seniority",
+  salary: "Salary",
+  employment: "Employment",
+  timezone: "Timezone",
+  benefits: "Benefits",
 };
 
-interface Props {
-  factors: FactorResult[];
-  matchPercent: number;
+function progressColor(score: number, active: boolean): "success" | "warning" | "inherit" {
+  if (!active) return "inherit";
+  if (score >= 0.75) return "success";
+  if (score >= 0.5) return "warning";
+  return "inherit";
 }
 
-export default function ScoreBreakdown({ factors, matchPercent }: Props) {
+function FactorRow({ factor }: { factor: FactorResult }) {
+  const label = FACTOR_LABEL[factor.key] ?? factor.key;
+  const pct = Math.round(factor.score * 100);
+  const color = progressColor(factor.score, factor.active);
+
+  return (
+    <TableRow
+      sx={{
+        "&:last-child td": { borderBottom: 0 },
+        opacity: factor.active ? 1 : 0.55,
+      }}
+    >
+      <TableCell sx={{ fontWeight: factor.active ? 600 : 400, py: 1, pl: 0, width: "16%" }}>
+        {label}
+      </TableCell>
+      <TableCell sx={{ width: "30%", py: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <LinearProgress
+            variant="determinate"
+            value={factor.active ? pct : 0}
+            color={color}
+            aria-label={label}
+            aria-valuenow={factor.active ? pct : 0}
+            sx={{ flex: 1, height: 7, borderRadius: 4, bgcolor: "grey.200" }}
+          />
+          <Typography variant="caption" sx={{ width: 32, textAlign: "right", color: "text.secondary" }}>
+            {factor.active ? `${pct}%` : "—"}
+          </Typography>
+        </Box>
+      </TableCell>
+      <TableCell align="right" sx={{ py: 1, color: "text.secondary", width: "15%" }}>
+        {factor.active ? `${factor.points.toFixed(1)} / ${factor.weight}` : "—"}
+      </TableCell>
+      <TableCell sx={{ py: 1, fontSize: "0.78rem", color: "text.secondary" }}>
+        {factor.active ? factor.detail : "Not set in your criteria"}
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export interface ScoreBreakdownProps {
+  match: MatchResult;
+}
+
+/**
+ * Per-factor match score table (SPEC §10.3, FR7). Shows a progress bar,
+ * points/weight and detail for each factor. Inactive factors show
+ * "Not set in your criteria" and are visually dimmed.
+ */
+export function ScoreBreakdown({ match }: ScoreBreakdownProps) {
+  const level = matchLevel(match.matchPercent);
+  const levelColor =
+    level === "Strong" ? "success.main" : level === "Medium" ? "warning.main" : "text.secondary";
+
   return (
     <Box>
-      <Typography variant="subtitle2" gutterBottom>
-        Overall match: <strong>{matchPercent}%</strong>
-      </Typography>
-      <TableContainer>
-        <Table size="small" aria-label="Match score breakdown">
-          <caption style={{ captionSide: "bottom", fontSize: "0.75rem", color: "inherit" }}>
-            Match score breakdown
-          </caption>
-          <TableHead>
-            <TableRow>
-              <TableCell>Factor</TableCell>
-              <TableCell sx={{ minWidth: 120 }}>Score</TableCell>
-              <TableCell align="right">Points</TableCell>
-              <TableCell>Detail</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {factors.map((f) => (
-              <TableRow key={f.key}>
-                <TableCell component="th" scope="row">
-                  {FACTOR_LABELS[f.key] ?? f.key}
-                </TableCell>
-                <TableCell>
-                  {f.active ? (
-                    <LinearProgress
-                      variant="determinate"
-                      value={f.score * 100}
-                      aria-label={`${FACTOR_LABELS[f.key] ?? f.key} score`}
-                      aria-valuenow={Math.round(f.score * 100)}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      sx={{ height: 8, borderRadius: 4 }}
-                    />
-                  ) : (
-                    <Typography variant="caption" color="text.disabled">
-                      not set
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="caption">
-                    {f.active ? `${f.points.toFixed(1)} / ${f.weight}` : "—"}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="caption" color="text.secondary">
-                    {f.detail}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* Total badge */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+        <Typography
+          variant="h3"
+          component="p"
+          sx={{ fontWeight: 800, color: levelColor, lineHeight: 1 }}
+        >
+          {match.matchPercent}%
+        </Typography>
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: levelColor }}>
+            {level} match
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            based on your criteria
+          </Typography>
+        </Box>
+      </Box>
+
+      <Table
+        size="small"
+        aria-label="Match score breakdown"
+        sx={{ tableLayout: "fixed", "& td, & th": { px: 0.5 } }}
+      >
+        <caption style={{ captionSide: "bottom", display: "none" }}>Match score breakdown</caption>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ fontWeight: 700, color: "text.secondary", fontSize: "0.72rem", pl: 0 }}>
+              FACTOR
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700, color: "text.secondary", fontSize: "0.72rem" }}>
+              SCORE
+            </TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700, color: "text.secondary", fontSize: "0.72rem" }}>
+              PTS / WT
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700, color: "text.secondary", fontSize: "0.72rem" }}>
+              DETAIL
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {match.factors.map((factor) => (
+            <FactorRow key={factor.key} factor={factor} />
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={2} sx={{ pl: 0, fontWeight: 700, borderTop: "2px solid", borderColor: "divider" }}>
+              Total
+            </TableCell>
+            <TableCell
+              align="right"
+              sx={{ fontWeight: 800, color: levelColor, borderTop: "2px solid", borderColor: "divider" }}
+            >
+              {match.matchPercent}%
+            </TableCell>
+            <TableCell sx={{ borderTop: "2px solid", borderColor: "divider" }} />
+          </TableRow>
+        </TableFooter>
+      </Table>
     </Box>
   );
 }
+
+export default ScoreBreakdown;

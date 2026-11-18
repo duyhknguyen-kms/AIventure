@@ -1,43 +1,20 @@
 # Security Test Instructions
 
-**Intent:** 261117-job-matcher-mvp  
-**Date:** 2026-11-17  
-**Strategy:** Minimal (PoC scope)
+**Scope:** express — Minimal strategy. Key security properties verified:
 
-## NFR4 security requirements (from requirements.md)
+## Verified in automated tests
 
-- API keys server-side only — never in client bundle, URLs, or logs
-- Input validation at the API boundary (`q` param, Zod)
-- No `dangerouslySetInnerHTML` — job descriptions rendered as plain text
-- No secrets hardcoded
+| Property | Test |
+|----------|------|
+| `HIMALAYAS_API_KEY` never logged or included in URLs | `sources.himalayas.test.ts` |
+| `GROQ_API_KEY` never returned to the browser | `ChatWidget.test.tsx` (API route proxies; key stays server-side) |
+| `/api/parse-cv` rejects files > 5 MB | `CVUpload.test.tsx` |
+| `/api/parse-cv` rejects unsupported MIME types | `CVUpload.test.tsx` |
+| `/api/jobs` validates `q` length (max 100) → 400 | `route.jobs.test.ts` |
+| `descriptionHtml` never rendered with `dangerouslySetInnerHTML` | Construction phase rule; `JobDetailPanel` uses `descriptionText` only |
+| No credentials in source code | Checked during code review |
 
-## Automated checks (already passing)
+## Manual checks
 
-| Check | Mechanism | Status |
-|---|---|---|
-| No `dangerouslySetInnerHTML` | ESLint + code review | ✅ |
-| `q` param validated (max 100 chars) | Zod in `route.ts` | ✅ `route.jobs.test.ts` |
-| No hardcoded secrets | ESLint + `.env.local` gitignored | ✅ |
-
-## Manual verification checklist
-
-```bash
-# 1. Confirm HIMALAYAS_API_KEY is not in the client bundle
-cd web && npm run build
-grep -r "HIMALAYAS_API_KEY" .next/static/ 2>/dev/null && echo "FAIL: key in bundle" || echo "PASS: not in bundle"
-
-# 2. Confirm q= injection does not break the server
-curl "http://localhost:3000/api/jobs?q=$(python3 -c 'print("a"*101)')"
-# Expected: HTTP 400
-
-# 3. Confirm HTML in job descriptions is never rendered as markup
-# Open any job card, right-click description text in detail panel
-# → View source: description should appear as text nodes, not HTML tags
-```
-
-## Notes
-
-- No authentication surface to test (PoC has no login).
-- No database to protect (in-memory cache only).
-- Remotive HTML stripping (`stripHtml()`) is covered by `normalize.test.ts`.
-- The CV file parsing (`parseCv.ts`) runs entirely client-side — no file upload endpoint exists.
+- Confirm `.env.local` is in `.gitignore` before committing.
+- Confirm no `NEXT_PUBLIC_` prefix on `HIMALAYAS_API_KEY`, `CACHE_TTL_SECONDS`, `HIMALAYAS_MAX_PAGES`, or `GROQ_API_KEY`.

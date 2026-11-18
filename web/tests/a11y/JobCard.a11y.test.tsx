@@ -1,129 +1,89 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import theme from "@/theme";
-import JobCard from "@/components/JobCard";
+import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { JobCard } from "@/components/JobCard";
+import { makeJob, makeMatch, renderWithTheme } from "../helpers/ui";
 import { runAxe } from "./axe";
-import type { Job, MatchResult } from "@/lib/types";
 
-function makeJob(overrides: Partial<Job> = {}): Job {
-  return {
-    id: "himalayas:test-1",
-    source: "himalayas",
-    sourceId: "test-1",
-    title: "Senior Frontend Engineer",
-    company: "Acme Corp",
-    companyLogo: "https://cdn.example.com/acme.png",
-    applyUrl: "https://himalayas.app/apply",
-    sourceUrl: "https://himalayas.app/job/test-1",
-    employmentType: "full_time",
-    seniority: ["senior"],
-    salary: {
-      min: 120_000, max: 150_000, currency: "USD",
-      period: "annual", annualMin: 120_000, annualMax: 150_000, raw: null,
-    },
-    location: { worldwide: true, countries: [], regions: [], raw: null },
-    timezones: [3, 4, 5, 6],
-    categories: ["Engineering"],
-    tags: [],
-    excerpt: null,
-    descriptionHtml: "",
-    descriptionText: "Build our React design system with TypeScript. We offer health insurance and unlimited PTO.",
-    publishedAt: "2026-11-16T08:00:00.000Z",
-    expiresAt: null,
-    alsoOn: [],
-    ...overrides,
-  };
-}
+describe("JobCard accessibility (SPEC §13, NFR3)", () => {
+  it("renders with zero axe violations and is named by title and company", async () => {
+    const job = makeJob();
+    const { container } = renderWithTheme(<JobCard job={job} match={makeMatch(job)} mustHave={["health"]} />);
 
-function makeMatch(overrides: Partial<MatchResult> = {}): MatchResult {
-  return {
-    jobId: "himalayas:test-1",
-    matchPercent: 88,
-    factors: [
-      { key: "skills", weight: 30, active: true, score: 0.75, points: 22.5, detail: "3/4" },
-    ],
-    benefits: [
-      { key: "health", label: "Health / Medical", evidence: ["health insurance"] },
-      { key: "pto", label: "Paid time off", evidence: ["unlimited PTO"] },
-    ],
-    locationUncertain: false,
-    ...overrides,
-  };
-}
-
-function renderCard(job: Job, match: MatchResult) {
-  const { container } = render(
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <ul>
-        <JobCard job={job} match={match} onClick={() => {}} />
-      </ul>
-    </ThemeProvider>,
-  );
-  return container;
-}
-
-// ── Axe (zero violations) ──────────────────────────────────────────────────
-
-describe("JobCard a11y", () => {
-  it("has zero axe violations", async () => {
-    const container = renderCard(makeJob(), makeMatch());
-    const violations = await runAxe(container);
-    expect(violations).toEqual([]);
+    expect(await runAxe(container)).toEqual([]);
+    const card = screen.getByRole("article");
+    expect(card).toHaveAccessibleName(/Senior Frontend Engineer/);
+    expect(card).toHaveAccessibleName(/Acme/);
+    expect(screen.getByRole("heading", { level: 3, name: "Senior Frontend Engineer" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Acme logo" })).toBeInTheDocument();
   });
 
-  it("has zero axe violations when logo is missing (initials Avatar)", async () => {
-    const container = renderCard(
-      makeJob({ companyLogo: null }),
-      makeMatch(),
-    );
-    const violations = await runAxe(container);
-    expect(violations).toEqual([]);
-  });
-});
+  it("shows an initials Avatar when the logo is missing, still with no violations", async () => {
+    const job = makeJob({ company: "Blue Harbor Labs", companyLogo: null });
+    const { container } = renderWithTheme(<JobCard job={job} match={makeMatch(job)} />);
 
-// ── Accessible name ────────────────────────────────────────────────────────
-
-describe("JobCard accessible name", () => {
-  it("action area has accessible name containing title and company", () => {
-    const container = renderCard(makeJob(), makeMatch());
-    // CardActionArea renders as a native <button>, not role="button"
-    const btn = container.querySelector("button") as HTMLElement;
-    const label = btn?.getAttribute("aria-label") ?? "";
-    expect(label).toContain("Senior Frontend Engineer");
-    expect(label).toContain("Acme Corp");
+    expect(screen.getByTestId("job-card-initials")).toHaveTextContent("BH");
+    expect(screen.queryByRole("img", { name: /logo/ })).not.toBeInTheDocument();
+    expect(await runAxe(container)).toEqual([]);
   });
 
-  it("match badge text includes the level word, not only a colour", () => {
-    const container = renderCard(makeJob(), makeMatch({ matchPercent: 88 }));
-    const text = container.textContent ?? "";
-    expect(text).toMatch(/Strong match/i);
-    expect(text).toMatch(/88%/);
+  it("match badge text includes the number and the level word, not only colour", () => {
+    const job = makeJob();
+    renderWithTheme(<JobCard job={job} match={makeMatch(job, { matchPercent: 88 })} />);
+    expect(screen.getByTestId("job-card-match-badge")).toHaveTextContent("88% · Strong match");
   });
 
-  it("medium match (60%) shows 'Medium match'", () => {
-    const container = renderCard(makeJob(), makeMatch({ matchPercent: 60 }));
-    expect(container.textContent).toMatch(/Medium match/i);
+  it.each([
+    [75, "75% · Strong match"],
+    [74, "74% · Medium match"],
+    [50, "50% · Medium match"],
+    [49, "49% · Low match"],
+  ])("labels %i%% as %s", (percent, label) => {
+    const job = makeJob();
+    renderWithTheme(<JobCard job={job} match={makeMatch(job, { matchPercent: percent })} />);
+    expect(screen.getByTestId("job-card-match-badge")).toHaveTextContent(label);
   });
 
-  it("low match (30%) shows 'Low match'", () => {
-    const container = renderCard(makeJob(), makeMatch({ matchPercent: 30 }));
-    expect(container.textContent).toMatch(/Low match/i);
+  it("shows salary, employment type, location note and source credit", () => {
+    const job = makeJob({
+      salary: null,
+      employmentType: "contract",
+      source: "remotive",
+      sourceUrl: "https://remotive.com/remote-jobs/software-dev/frontend-1",
+      location: { worldwide: false, countries: [], regions: [], raw: "Somewhere nice" },
+      alsoOn: [{ source: "himalayas", url: "https://himalayas.app/companies/acme/jobs/x" }],
+    });
+    renderWithTheme(<JobCard job={job} match={makeMatch(job, { locationUncertain: true })} />);
+
+    expect(screen.getByTestId("job-card-salary")).toHaveTextContent("Salary not listed");
+    expect(screen.getByTestId("job-card-employment")).toHaveTextContent("Contract");
+    expect(screen.getByTestId("job-card-location")).toHaveTextContent("Somewhere nice (location uncertain");
+    const credit = screen.getByTestId("source-attribution");
+    expect(credit).toHaveTextContent("Source: Remotive");
+    expect(within(credit).getByRole("link", { name: "View Senior Frontend Engineer on Remotive (opens in new tab)" }))
+      .toHaveAttribute("href", "https://remotive.com/remote-jobs/software-dev/frontend-1");
+    expect(within(credit).getByRole("link", { name: "View Senior Frontend Engineer on Himalayas (opens in new tab)" }))
+      .toHaveAttribute("target", "_blank");
   });
-});
 
-// ── Source attribution ────────────────────────────────────────────────────
+  it("calls onSelect from the card action by keyboard, with no violations", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const job = makeJob();
+    const { container } = renderWithTheme(<JobCard job={job} match={makeMatch(job)} onSelect={onSelect} />);
 
-describe("JobCard source attribution", () => {
-  it("source link includes '(opens in new tab)' in aria-label", () => {
-    const container = renderCard(makeJob(), makeMatch());
-    const links = container.querySelectorAll("a");
-    const sourceLink = Array.from(links).find(
-      (l) => l.getAttribute("aria-label")?.includes("opens in new tab"),
-    );
-    expect(sourceLink).toBeDefined();
+    const action = screen.getByRole("button", { name: "Senior Frontend Engineer" });
+    action.focus();
+    await user.keyboard("{Enter}");
+    expect(onSelect).toHaveBeenCalledWith(job);
+    expect(screen.getByRole("heading", { level: 3 })).toContainElement(action);
+    expect(await runAxe(container)).toEqual([]);
+  });
+
+  it("renders no action button without onSelect", () => {
+    const job = makeJob();
+    renderWithTheme(<JobCard job={job} match={makeMatch(job)} />);
+    expect(screen.queryByTestId("job-card-action")).not.toBeInTheDocument();
   });
 });

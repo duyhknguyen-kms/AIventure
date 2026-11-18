@@ -1,136 +1,264 @@
 "use client";
+
+import { useId } from "react";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import BenefitChips from "./BenefitChips";
-import HighlightText from "./HighlightText";
-import SourceAttribution from "./SourceAttribution";
-import type { Job, MatchResult, BenefitKey } from "@/lib/types";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import WorkOutlineIcon from "@mui/icons-material/WorkOutlined";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import { BenefitChips } from "@/components/BenefitChips";
+import { SourceAttribution } from "@/components/SourceAttribution";
+import {
+  formatEmploymentType,
+  formatLocation,
+  formatPostedDate,
+  formatSalary,
+  initials,
+  matchBadgeLabel,
+  matchLevel,
+  type MatchLevel,
+} from "@/lib/format";
+import type { BenefitKey, Job, MatchResult } from "@/lib/types";
 
-interface Props {
+export const CARD_VISIBLE_BENEFITS = 5;
+
+export interface JobCardProps {
   job: Job;
   match: MatchResult;
-  mustHave?: BenefitKey[];
-  keywords?: string[];
-  targetTitles?: string[];
-  onClick: (job: Job) => void;
+  mustHave?: readonly BenefitKey[];
+  onSelect?: (job: Job) => void;
 }
 
-/** §10.5 — Match level: number + text, never colour alone. */
-function matchLevel(pct: number): { label: string; color: "success" | "warning" | "error" } {
-  if (pct >= 75) return { label: "Strong match", color: "success" };
-  if (pct >= 50) return { label: "Medium match", color: "warning" };
-  return { label: "Low match", color: "error" };
+/** Semi-transparent badge backgrounds — work in both light and dark mode. */
+const BADGE_BG: Readonly<Record<MatchLevel, string>> = {
+  Strong: "rgba(27,94,32,0.12)",
+  Medium: "rgba(138,75,0,0.12)",
+  Low: "rgba(128,128,128,0.10)",
+};
+
+function CompanyAvatar({ company, logo }: { company: string; logo: string | null }) {
+  const fallback = initials(company);
+  if (logo) {
+    return (
+      <Avatar
+        src={logo}
+        alt={`${company} logo`}
+        data-testid="job-card-logo"
+        sx={{
+          width: 48,
+          height: 48,
+          bgcolor: "action.hover",
+          border: "2px solid",
+          borderColor: "divider",
+          "& img": { objectFit: "contain", p: "4px" },
+        }}
+      >
+        {fallback}
+      </Avatar>
+    );
+  }
+  return (
+    <Avatar
+      aria-hidden="true"
+      data-testid="job-card-initials"
+      sx={{
+        width: 48,
+        height: 48,
+        bgcolor: "primary.main",
+        color: "primary.contrastText",
+        fontWeight: 700,
+        fontSize: "1rem",
+      }}
+    >
+      {fallback}
+    </Avatar>
+  );
 }
 
-/** Format salary for display, e.g. "USD 120k–150k/yr" */
-function formatSalary(job: Job): string | null {
-  const s = job.salary;
-  if (!s) return null;
-  const cur = s.currency ?? "";
-  const fmt = (n: number) => n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
-  const range =
-    s.min !== null && s.max !== null && s.min !== s.max
-      ? `${fmt(s.min)}–${fmt(s.max)}`
-      : s.max !== null
-      ? fmt(s.max)
-      : s.min !== null
-      ? fmt(s.min)
-      : null;
-  if (!range) return null;
-  const period = s.period === "annual" ? "/yr" : `/${s.period}`;
-  return `${cur} ${range}${period}`.trim();
+function MetaChip({ icon, label, testId }: { icon: React.ReactNode; label: string; testId: string }) {
+  return (
+    <Chip
+      icon={<Box sx={{ "& svg": { fontSize: "0.9rem !important" } }}>{icon}</Box>}
+      label={label}
+      size="small"
+      variant="outlined"
+      data-testid={testId}
+      sx={{
+        fontSize: "0.775rem",
+        height: 26,
+        borderColor: "divider",
+        bgcolor: "action.hover",
+        "& .MuiChip-icon": { ml: "6px", mr: "-2px", color: "text.secondary" },
+      }}
+    />
+  );
 }
 
-/** Company initials fallback for Avatar */
-function initials(company: string): string {
-  return company
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
+export function JobCard({ job, match, mustHave = [], onSelect }: JobCardProps) {
+  const baseId = useId();
+  const titleId = `${baseId}-title`;
+  const companyId = `${baseId}-company`;
+  const level = matchLevel(match.matchPercent);
+  const employment = formatEmploymentType(job.employmentType);
+  const posted = formatPostedDate(job.publishedAt);
+  const salary = formatSalary(job.salary);
+  const location = formatLocation(job.location);
 
-export default function JobCard({ job, match, mustHave = [], keywords = [], targetTitles = [], onClick }: Props) {
-  const { pct, label: levelLabel, color } = {
-    pct: match.matchPercent,
-    ...matchLevel(match.matchPercent),
-  };
-  const hasActiveCriteria = match.factors.some((f) => f.active);
-
-  const salary = formatSalary(job);
-  const locationSummary = job.location.worldwide
-    ? "Worldwide"
-    : [...job.location.countries, ...job.location.regions].slice(0, 3).join(", ") || "Location varies";
+  const titleText = onSelect ? (
+    <CardActionArea
+      onClick={() => onSelect(job)}
+      data-testid="job-card-action"
+      sx={{
+        position: "static",
+        font: "inherit",
+        textAlign: "left",
+        "&::after": { content: '""', position: "absolute", inset: 0 },
+      }}
+    >
+      {job.title}
+    </CardActionArea>
+  ) : (
+    job.title
+  );
 
   return (
-    <Card component="li" sx={{ listStyle: "none" }}>
-      {/* CardActionArea must NOT contain interactive elements (links, buttons).
-          SourceAttribution lives below it to avoid nested-interactive violations. */}
-      <CardActionArea
-        onClick={() => onClick(job)}
-        aria-label={
-          hasActiveCriteria
-            ? `${job.title} at ${job.company}, ${pct}% ${levelLabel}`
-            : `${job.title} at ${job.company}`
-        }
-      >
-        <CardHeader
-          avatar={
-            <Avatar
-              src={job.companyLogo ?? undefined}
-              alt={`${job.company} logo`}
-              sx={{ width: 40, height: 40 }}
-            >
-              {initials(job.company)}
-            </Avatar>
-          }
-          title={
-            <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600 }}>
-              <HighlightText
-                text={job.title}
-                terms={[...keywords, ...targetTitles]}
-              />
-            </Typography>
-          }
-          subheader={job.company}
-          action={
-            hasActiveCriteria ? (
-              <Chip
-                label={`${pct}% · ${levelLabel}`}
-                color={color}
-                size="small"
-                sx={{ mt: 1, mr: 1 }}
-              />
-            ) : null
-          }
-        />
-        <CardContent sx={{ pt: 0 }}>
-          <Stack spacing={0.5}>
-            <Typography variant="body2" color="text.secondary">
-              {[
-                job.employmentType?.replace("_", " "),
-                salary,
-                locationSummary,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </Typography>
-            <BenefitChips benefits={match.benefits} mustHave={mustHave} />
-          </Stack>
-        </CardContent>
-      </CardActionArea>
+    <Card
+      component="article"
+      variant="outlined"
+      aria-labelledby={`${titleId} ${companyId}`}
+      data-testid="job-card"
+      sx={{
+        position: "relative",
+        height: "100%",
+        border: "1px solid",
+        borderColor: "divider",
+        bgcolor: "background.paper",
+        "&:hover": {
+          transform: "translateY(-3px)",
+          boxShadow: "0 8px 32px rgba(26,86,219,0.14)",
+          borderColor: "primary.light",
+        },
+        "&:focus-within": {
+          borderColor: "primary.main",
+          boxShadow: "0 0 0 3px rgba(26,86,219,0.12)",
+        },
+        transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
+      }}
+    >
+      <CardContent sx={{ p: 2.5 }}>
+        {/* Header: avatar + title + badge */}
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start", mb: 1.5 }}>
+          <CompanyAvatar company={job.company} logo={job.companyLogo} />
 
-      {/* Attribution is outside the action area so the link isn't nested inside a button */}
-      <Box sx={{ px: 2, pb: 1 }}>
-        <SourceAttribution job={job} />
-      </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start", justifyContent: "space-between" }}>
+              <Typography
+                variant="subtitle1"
+                component="h3"
+                id={titleId}
+                sx={{ fontWeight: 700, lineHeight: 1.3, fontSize: "0.95rem", pr: 1 }}
+              >
+                {titleText}
+              </Typography>
+              <Box
+                sx={{
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  bgcolor: BADGE_BG[level],
+                  borderRadius: 2,
+                  px: 1,
+                  py: 0.5,
+                }}
+              >
+                <TrendingUpIcon
+                  sx={{
+                    fontSize: "0.9rem",
+                    color: level === "Strong" ? "success.main" : level === "Medium" ? "warning.main" : "text.secondary",
+                  }}
+                  aria-hidden="true"
+                />
+                <Typography
+                  variant="caption"
+                  component="span"
+                  data-testid="job-card-match-badge"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.78rem",
+                    color: level === "Strong" ? "success.main" : level === "Medium" ? "warning.main" : "text.secondary",
+                  }}
+                >
+                  {matchBadgeLabel(match.matchPercent)}
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Typography
+              variant="body2"
+              id={companyId}
+              color="text.secondary"
+              sx={{ fontWeight: 500, mt: 0.25 }}
+            >
+              {job.company}
+            </Typography>
+          </Box>
+        </Stack>
+
+        {/* Meta chips */}
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1.5 }}>
+          {employment && (
+            <MetaChip icon={<WorkOutlineIcon />} label={employment} testId="job-card-employment" />
+          )}
+          <MetaChip icon={<AttachMoneyIcon />} label={salary} testId="job-card-salary" />
+          <MetaChip
+            icon={<PlaceOutlinedIcon />}
+            label={location + (match.locationUncertain ? " (location uncertain, check the listing)" : "")}
+            testId="job-card-location"
+          />
+        </Box>
+
+        {/* Benefits */}
+        <Box sx={{ position: "relative", zIndex: 1 }}>
+          <BenefitChips benefits={match.benefits} mustHave={mustHave} maxVisible={CARD_VISIBLE_BENEFITS} />
+        </Box>
+
+        {/* Footer: posted date + source */}
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: "center",
+            justifyContent: "space-between",
+            mt: 1.5,
+            pt: 1.5,
+            borderTop: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          {posted && (
+            <Typography variant="caption" color="text.disabled">
+              {posted}
+            </Typography>
+          )}
+          <Box sx={{ ml: "auto", position: "relative", zIndex: 1 }}>
+            <SourceAttribution
+              source={job.source}
+              sourceUrl={job.sourceUrl}
+              alsoOn={job.alsoOn}
+              jobTitle={job.title}
+            />
+          </Box>
+        </Stack>
+      </CardContent>
     </Card>
   );
 }
+
+export default JobCard;

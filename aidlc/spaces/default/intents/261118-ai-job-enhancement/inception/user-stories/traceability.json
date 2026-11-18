@@ -1,0 +1,20 @@
+{
+  "stage": "user-stories",
+  "upstream_ids": [
+    "FR1", "FR1.1", "FR1.2",
+    "FR2", "FR2.1", "FR2.2", "FR2.3",
+    "NFR1", "NFR2", "NFR3"
+  ],
+  "coverage": [
+    { "id": "FR1",   "status": "OK", "target": "US-001, US-002" },
+    { "id": "FR1.1", "status": "OK", "target": "US-001" },
+    { "id": "FR1.2", "status": "OK", "target": "US-002" },
+    { "id": "FR2",   "status": "OK", "target": "US-003, US-004, US-005" },
+    { "id": "FR2.1", "status": "OK", "target": "US-003" },
+    { "id": "FR2.2", "status": "OK", "target": "US-004" },
+    { "id": "FR2.3", "status": "OK", "target": "US-005" },
+    { "id": "NFR1",  "status": "OK", "target": "implicit — all new test files" },
+    { "id": "NFR2",  "status": "OK", "target": "implicit — no new UI components" },
+    { "id": "NFR3",  "status": "OK", "target": "implicit — additive changes only" }
+  ]
+}
